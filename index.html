@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERSO GROUP SHPK — Global Trade, Delivered</title>
+<meta name="description" content="ERSO GROUP SHPK — sourcing, trucking, sea and air freight, and customs clearance. Global trade, delivered end to end.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href="#top">ERSO <span>GROUP</span></a>
+    <nav class="site-nav">
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ SCROLL-DRIVEN HERO JOURNEY ============ -->
+  <section class="scroll-journey" id="journey" aria-label="Cargo journey animation">
+    <div class="scene-sticky">
+      <div class="scene" id="scene">
+
+        <!-- Background phase layers (crossfaded by scroll progress) -->
+        <div class="bg-layer bg-industrial" data-layer="industrial"></div>
+        <div class="bg-layer bg-yard" data-layer="yard"></div>
+        <div class="bg-layer bg-road" data-layer="road"></div>
+        <div class="bg-layer bg-ocean" data-layer="ocean"></div>
+        <div class="bg-layer bg-sky" data-layer="sky"></div>
+        <div class="bg-layer bg-arrival" data-layer="arrival"></div>
+
+        <!-- Shot 1: Factory -->
+        <div class="el factory" id="factory">
+          <svg viewBox="0 0 220 140" width="220" height="140">
+            <rect x="10" y="70" width="200" height="60" fill="#0b2545"/>
+            <rect x="30" y="40" width="30" height="30" fill="#0b2545"/>
+            <rect x="70" y="20" width="18" height="110" fill="#123a63"/>
+            <rect x="100" y="30" width="18" height="100" fill="#123a63"/>
+            <circle class="smoke s1" cx="109" cy="18" r="9" fill="#c7d4e3"/>
+            <circle class="smoke s2" cx="79" cy="10" r="7" fill="#c7d4e3"/>
+            <rect x="40" y="90" width="20" height="30" fill="#f4a300"/>
+            <rect x="150" y="90" width="20" height="30" fill="#f4a300"/>
+            <rect x="0" y="128" width="220" height="6" fill="#08182b"/>
+          </svg>
+        </div>
+
+        <!-- Inspection overlay: shot 2 -->
+        <div class="el inspector" id="inspector">
+          <svg viewBox="0 0 100 100" width="90" height="90">
+            <rect x="10" y="10" width="55" height="70" rx="4" fill="#ffffff" stroke="#0b2545" stroke-width="3"/>
+            <line x1="20" y1="28" x2="55" y2="28" stroke="#0b2545" stroke-width="3"/>
+            <line x1="20" y1="42" x2="55" y2="42" stroke="#0b2545" stroke-width="3"/>
+            <line x1="20" y1="56" x2="45" y2="56" stroke="#0b2545" stroke-width="3"/>
+            <path d="M18 27l4 5 8-10" stroke="#2e9e57" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 41l4 5 8-10" stroke="#2e9e57" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="72" cy="70" r="18" fill="none" stroke="#f4a300" stroke-width="5"/>
+            <line x1="85" y1="83" x2="96" y2="94" stroke="#f4a300" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Shared cargo container: shots 2-6 -->
+        <div class="el container-box" id="containerBox">
+          <svg viewBox="0 0 220 110" width="220" height="110">
+            <rect x="4" y="4" width="212" height="102" rx="4" fill="#f4a300" stroke="#c07f00" stroke-width="3"/>
+            <g stroke="#c07f00" stroke-width="2">
+              <line x1="20" y1="4" x2="20" y2="106"/><line x1="40" y1="4" x2="40" y2="106"/>
+              <line x1="60" y1="4" x2="60" y2="106"/><line x1="80" y1="4" x2="80" y2="106"/>
+              <line x1="100" y1="4" x2="100" y2="106"/><line x1="120" y1="4" x2="120" y2="106"/>
+              <line x1="140" y1="4" x2="140" y2="106"/><line x1="160" y1="4" x2="160" y2="106"/>
+              <line x1="180" y1="4" x2="180" y2="106"/><line x1="200" y1="4" x2="200" y2="106"/>
+            </g>
+            <rect x="10" y="42" width="60" height="24" fill="#0b2545"/>
+            <text x="40" y="59" font-family="Manrope, sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">ERSO</text>
+          </svg>
+        </div>
+
+        <!-- Shot 3: crane / reach stacker -->
+        <div class="el crane" id="crane">
+          <svg viewBox="0 0 260 200" width="260" height="200">
+            <rect x="10" y="140" width="90" height="45" rx="4" fill="#f4a300"/>
+            <rect x="10" y="120" width="46" height="26" rx="3" fill="#0b2545"/>
+            <rect x="18" y="127" width="24" height="14" fill="#bcd3ea"/>
+            <circle cx="35" cy="188" r="12" fill="#222"/>
+            <circle cx="80" cy="188" r="12" fill="#222"/>
+            <g id="craneBoom" style="transform-origin:56px 150px;">
+              <rect x="50" y="145" width="150" height="10" rx="4" fill="#c07f00"/>
+              <line id="craneCable" x1="196" y1="150" x2="196" y2="150" stroke="#333" stroke-width="3"/>
+              <rect id="craneHook" x="186" y="150" width="20" height="14" rx="2" fill="#0b2545"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Shots 5-6: truck -->
+        <div class="el truck" id="truck">
+          <svg viewBox="0 0 260 130" width="260" height="130">
+            <rect x="4" y="40" width="150" height="55" fill="#dfe6ee" stroke="#9fb0c3" stroke-width="2"/>
+            <rect x="160" y="20" width="60" height="75" rx="6" fill="#0b2545"/>
+            <rect x="170" y="30" width="24" height="20" fill="#bcd3ea"/>
+            <circle cx="40" cy="102" r="16" fill="#222"/>
+            <circle cx="40" cy="102" r="6" fill="#888"/>
+            <circle cx="120" cy="102" r="16" fill="#222"/>
+            <circle cx="120" cy="102" r="6" fill="#888"/>
+            <circle cx="195" cy="102" r="16" fill="#222"/>
+            <circle cx="195" cy="102" r="6" fill="#888"/>
+          </svg>
+        </div>
+
+        <!-- Shot 7: top-down road -->
+        <div class="el road" id="road">
+          <svg viewBox="0 0 400 300" width="400" height="300" preserveAspectRatio="none">
+            <path d="M180 300 C180 180 260 150 260 60 C260 20 300 0 340 0" stroke="#495868" stroke-width="70" fill="none"/>
+            <path d="M180 300 C180 180 260 150 260 60 C260 20 300 0 340 0" stroke="#e7c25a" stroke-width="4" stroke-dasharray="16 16" fill="none"/>
+          </svg>
+          <div class="el road-truck" id="roadTruck">
+            <svg viewBox="0 0 60 100" width="46" height="76">
+              <rect x="12" y="4" width="36" height="52" rx="6" fill="#f4a300"/>
+              <rect x="14" y="60" width="32" height="34" rx="6" fill="#0b2545"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Shots 8-9: ocean + ship -->
+        <div class="el ocean" id="ocean">
+          <svg viewBox="0 0 400 120" width="100%" height="220" preserveAspectRatio="none">
+            <path d="M0 40 Q50 20 100 40 T200 40 T300 40 T400 40 V120 H0 Z" fill="#1c6f8c"/>
+            <path d="M0 60 Q50 40 100 60 T200 60 T300 60 T400 60 V120 H0 Z" fill="#155a72"/>
+          </svg>
+        </div>
+        <div class="el ship" id="ship">
+          <svg viewBox="0 0 300 150" width="300" height="150">
+            <path d="M20 100 L280 100 L250 140 L50 140 Z" fill="#0b2545"/>
+            <rect x="60" y="60" width="180" height="40" fill="#dfe6ee" stroke="#9fb0c3" stroke-width="2"/>
+            <rect x="80" y="30" width="40" height="30" fill="#f4a300"/>
+            <rect x="130" y="30" width="40" height="30" fill="#1c6f8c"/>
+            <rect x="180" y="30" width="40" height="30" fill="#f4a300"/>
+            <rect x="200" y="10" width="26" height="24" fill="#0b2545"/>
+          </svg>
+        </div>
+
+        <!-- Shot 10: sky, clouds, plane -->
+        <div class="el cloud cloud1" id="cloud1">
+          <svg viewBox="0 0 140 70" width="140" height="70"><ellipse cx="40" cy="40" rx="40" ry="24" fill="#fff"/><ellipse cx="80" cy="30" rx="34" ry="28" fill="#fff"/><ellipse cx="110" cy="42" rx="28" ry="20" fill="#fff"/></svg>
+        </div>
+        <div class="el cloud cloud2" id="cloud2">
+          <svg viewBox="0 0 140 70" width="120" height="60"><ellipse cx="40" cy="40" rx="40" ry="24" fill="#fff"/><ellipse cx="80" cy="30" rx="34" ry="28" fill="#fff"/><ellipse cx="110" cy="42" rx="28" ry="20" fill="#fff"/></svg>
+        </div>
+        <div class="el plane" id="plane">
+          <svg viewBox="0 0 200 80" width="180" height="72">
+            <path d="M10 40 L150 34 L190 40 L150 46 Z" fill="#0b2545"/>
+            <path d="M80 40 L50 10 L64 10 L100 38 Z" fill="#0b2545"/>
+            <path d="M80 42 L50 70 L64 70 L100 44 Z" fill="#0b2545"/>
+            <path d="M150 34 L172 22 L180 24 L162 40 Z" fill="#f4a300"/>
+          </svg>
+        </div>
+
+        <!-- Shot 11: customs checkpoint -->
+        <div class="el customs" id="customs">
+          <svg viewBox="0 0 160 140" width="150" height="130">
+            <rect x="20" y="60" width="120" height="70" fill="#dfe6ee" stroke="#0b2545" stroke-width="3"/>
+            <path d="M10 60 L80 20 L150 60 Z" fill="#0b2545"/>
+            <rect x="68" y="90" width="24" height="40" fill="#0b2545"/>
+            <rect x="34" y="76" width="20" height="18" fill="#1c6f8c"/>
+            <rect x="106" y="76" width="20" height="18" fill="#1c6f8c"/>
+          </svg>
+          <div class="el stamp" id="stamp">
+            <svg viewBox="0 0 90 90" width="80" height="80">
+              <circle cx="45" cy="45" r="40" fill="none" stroke="#c0392b" stroke-width="6"/>
+              <path d="M28 46l10 10 22-24" stroke="#c0392b" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Shot 12: hero content settles in -->
+        <div class="el hero-content" id="heroContent">
+          <p class="hero-eyebrow">ERSO GROUP SHPK</p>
+          <h1>Global Trade,<br>Delivered.</h1>
+          <p class="hero-sub">From factory floor to final mile — sourcing, trucking, ocean and air freight, and customs clearance, handled as one seamless journey.</p>
+          <a class="btn" href="#services">Explore Our Services</a>
+        </div>
+
+        <!-- Scroll cue -->
+        <div class="scroll-cue" id="scrollCue" aria-hidden="true">
+          <span>Scroll</span>
+          <div class="scroll-cue__line"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section services" id="services">
+    <div class="container">
+      <p class="section-eyebrow">What We Do</p>
+      <h2>End-to-end logistics, one partner</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="card__icon">🏭</div>
+          <h3>Sourcing &amp; Quality Control</h3>
+          <p>We vet suppliers, inspect goods before they leave the factory, and protect your supply chain from day one.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🚛</div>
+          <h3>Trucking &amp; Inland Transport</h3>
+          <p>Reliable inland haulage connecting factories, ports, and warehouses across every leg of the journey.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">🚢</div>
+          <h3>Sea Freight</h3>
+          <p>FCL and LCL ocean freight with competitive rates and full visibility from booking to discharge.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">✈️</div>
+          <h3>Air Freight</h3>
+          <p>Time-critical air cargo solutions for shipments that simply can't wait for the sea.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon">📋</div>
+          <h3>Customs Clearance</h3>
+          <p>Licensed customs brokerage and compliance handling that keeps your cargo moving, not waiting.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section about" id="about">
+    <div class="container about__grid">
+      <div>
+        <p class="section-eyebrow">About Us</p>
+        <h2>Built on trust, moved by precision</h2>
+        <p>ERSO GROUP SHPK is a freight forwarding and logistics company built around one idea: cargo should move with the same care and attention as the business behind it. From the first inspection at origin to final customs clearance, our team manages every handoff so you don't have to.</p>
+        <p>We work with manufacturers, importers, and distributors who need a logistics partner that treats their shipments like their own.</p>
+      </div>
+      <div class="about__stats">
+        <div class="stat"><span class="stat__num">15+</span><span class="stat__label">Years combined experience</span></div>
+        <div class="stat"><span class="stat__num">40+</span><span class="stat__label">Countries served</span></div>
+        <div class="stat"><span class="stat__num">24/7</span><span class="stat__label">Shipment visibility</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section contact" id="contact">
+    <div class="container contact__grid">
+      <div>
+        <p class="section-eyebrow">Get In Touch</p>
+        <h2>Let's move your cargo</h2>
+        <p>Tell us about your shipment and our team will get back to you with a tailored plan.</p>
+        <ul class="contact__info">
+          <li>📍 Tirana, Albania</li>
+          <li>✉️ info@ersogroup.al</li>
+          <li>📞 +355 4 000 0000</li>
+        </ul>
+      </div>
+      <form class="contact__form" onsubmit="return false;">
+        <label>Name<input type="text" name="name" required></label>
+        <label>Email<input type="email" name="email" required></label>
+        <label>Message<textarea name="message" rows="4" required></textarea></label>
+        <button class="btn" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© 2026 ERSO GROUP SHPK. All rights reserved.</span>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
