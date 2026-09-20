@@ -1,13 +1,19 @@
 const Post = require('../models/Post');
 const Reply = require('../models/Reply');
 const { emitPostCreated } = require('../sockets/index');
+const { CATEGORY_SLUGS } = require('../constants/categories');
 
 async function listFeed(req, res, next) {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
 
-    const posts = await Post.find()
+    const filter = {};
+    if (req.query.category && CATEGORY_SLUGS.includes(req.query.category)) {
+      filter.category = req.query.category;
+    }
+
+    const posts = await Post.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -21,15 +27,22 @@ async function listFeed(req, res, next) {
 
 async function createPost(req, res, next) {
   try {
-    const { text } = req.body;
+    const { text, category } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'Post text is required' });
     }
     if (text.length > 280) {
       return res.status(400).json({ error: 'Post text must be 280 characters or fewer' });
     }
+    if (category && !CATEGORY_SLUGS.includes(category)) {
+      return res.status(400).json({ error: 'Unknown category' });
+    }
 
-    let post = await Post.create({ author: req.user.id, text: text.trim() });
+    let post = await Post.create({
+      author: req.user.id,
+      text: text.trim(),
+      category: category || undefined,
+    });
     post = await post.populate('author', 'username displayName');
 
     emitPostCreated(post);

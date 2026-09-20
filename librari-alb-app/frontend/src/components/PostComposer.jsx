@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { createPost } from '../api/postsApi.js';
+import { ALL_CATEGORIES } from '../constants/categories.js';
 
 const MAX_LENGTH = 280;
 
-export default function PostComposer({ onPosted }) {
+export default function PostComposer({ onPosted, defaultCategory = '' }) {
   const { user, token } = useAuth();
   const [text, setText] = useState('');
+  const [category, setCategory] = useState(defaultCategory);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => setCategory(defaultCategory), [defaultCategory]);
 
   if (!user) return null;
 
@@ -19,7 +23,7 @@ export default function PostComposer({ onPosted }) {
     setSubmitting(true);
     setError('');
     try {
-      const { post } = await createPost(text, token);
+      const { post } = await createPost(text, category, token);
       setText('');
       onPosted?.(post);
     } catch (err) {
@@ -38,6 +42,18 @@ export default function PostComposer({ onPosted }) {
         rows={3}
       />
       <div className="post-composer-footer">
+        <select
+          className="post-composer-category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="">Pa kategori</option>
+          {ALL_CATEGORIES.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.label}
+            </option>
+          ))}
+        </select>
         <span className={text.length > MAX_LENGTH - 20 ? 'char-count warn' : 'char-count'}>
           {text.length}/{MAX_LENGTH}
         </span>

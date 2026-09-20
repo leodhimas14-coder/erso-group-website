@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { toggleLike } from '../api/postsApi.js';
+import { categoryLabel } from '../constants/categories.js';
 
 function timeAgo(dateString) {
   const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
@@ -30,6 +31,11 @@ export default function PostCard({ post, onChange }) {
         </Link>
         <span className="post-time">{timeAgo(post.createdAt)}</span>
       </div>
+      {post.category && (
+        <Link to={`/?kategoria=${post.category}`} className="post-category-badge">
+          #{categoryLabel(post.category)}
+        </Link>
+      )}
       <Link to={`/postimi/${post._id}`} className="post-text-link">
         <p className="post-text">{post.text}</p>
       </Link>
