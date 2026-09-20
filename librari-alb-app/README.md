@@ -13,6 +13,11 @@ out of the box:
   alternative (e.g. "kuti ngrirëse"), with a comment thread to discuss.
   Reachable from a small draggable button the user can drag anywhere on
   screen.
+- a **category picker**, opened from the Home button in the navbar: four
+  fixed shortcuts (Lajmet e Fundit, Lajme Urgjente, Protesta, Tema e Ditës)
+  plus a flat list of general topics (Sport, Kafshë, Politikë, Makina,
+  Anime & Manga, ...). Posts can optionally be tagged with one of these when
+  written, and picking a category filters the feed to just that topic.
 
 This is the **Phase 1 scaffold**: project structure, a working feed/post/
 reply/follow flow, JWT auth, the admin topic-of-the-day ping, and the
