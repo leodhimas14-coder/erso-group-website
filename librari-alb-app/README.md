@@ -76,11 +76,25 @@ admin panel lives at `/admin` and is only reachable by an admin account.
   connected client over Socket.IO (`topic:updated`) and persisted so it's
   still shown to anyone who loads the app later. New posts also broadcast
   live (`post:created`) so open feeds update without a refresh.
+- **"Fjala e Ditës" word game**: the admin sets a word + optional note via
+  `POST /api/word-of-day` (`/admin` page), broadcast live over Socket.IO
+  (`word:updated`). Users submit suggestions
+  (`POST /api/word-of-day/:wordId/suggestions`), vote them up or down
+  (`POST /api/word-of-day/suggestions/:suggestionId/vote`, toggled, one vote
+  per user per suggestion), with vote changes broadcast live
+  (`word:suggestion_updated`) and the current leader highlighted. A comment
+  thread underneath (`GET`/`POST /api/word-of-day/:wordId/comments`) is for
+  general discussion/opinions rather than suggestions themselves. The game
+  is opened from `FloatingWordWidget`, a small square button rendered above
+  every page that the user can drag anywhere on screen (position kept in
+  `localStorage`, per browser).
 - **Not built in Phase 1**: avatars/image uploads, direct messages,
-  push notifications (the "ping" is currently in-app/real-time only, not a
-  device push), search, hashtags/trending, an in-app way to grant the
+  push notifications (the "ping"/word broadcasts are in-app/real-time only,
+  not a device push), search, hashtags/trending, an in-app way to grant the
   `admin` role (use `makeAdmin.js` for now), rate limiting/spam controls,
-  and moderation tools (report/block/delete post).
+  moderation tools (report/block/delete post), a limit of one suggestion
+  per user per word round, and a formal "round closes, winner locked in" step
+  (right now the leaderboard is just live vote counts, with no cutoff).
 - **Natural next steps**: seed script for demo data, mobile-responsive
-  polish, push notifications for the daily topic, a moderation queue for
-  the admin panel.
+  polish, push notifications for the daily topic/word, a moderation queue
+  for the admin panel, closing word-of-day rounds on a schedule.
