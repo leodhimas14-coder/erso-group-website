@@ -3,6 +3,7 @@
 
   var journey = document.getElementById('journey');
   var scrollCue = document.getElementById('scrollCue');
+  var stepCaption = document.getElementById('stepCaption');
   if (!journey) return;
 
   var els = {
@@ -189,6 +190,32 @@
     scrollCue.classList.toggle('is-hidden', p > 0.03);
   }
 
+  // Step captions, keyed to the phase boundaries of the scene
+  var STEPS = [
+    { until: 0.08, num: '01', text: 'Gjejmë fabrikën' },
+    { until: 0.15, num: '02', text: 'Negociojmë çmimin' },
+    { until: 0.20, num: '03', text: 'Inspektojmë' },
+    { until: 0.28, num: '04', text: 'Blejmë' },
+    { until: 0.42, num: '05', text: 'Paketojmë' },
+    { until: 0.89, num: '06', text: 'Dërgojmë' },
+    { until: 0.95, num: '07', text: 'Zhdoganojmë' }
+  ];
+  var lastStep = null;
+
+  function updateStepCaption(p) {
+    if (!stepCaption) return;
+    var step = null;
+    for (var i = 0; i < STEPS.length; i++) {
+      if (p < STEPS[i].until) { step = STEPS[i]; break; }
+    }
+    stepCaption.classList.toggle('is-hidden', !step);
+    if (step && step !== lastStep) {
+      stepCaption.firstChild.textContent = step.num;
+      stepCaption.lastChild.textContent = step.text;
+      lastStep = step;
+    }
+  }
+
   function updateScene(p) {
     updateBackgrounds(p);
     updateFactory(p);
@@ -203,6 +230,7 @@
     updateCustoms(p);
     updateHero(p);
     updateScrollCue(p);
+    updateStepCaption(p);
   }
 
   // ---------- reduced motion: static final frame ----------

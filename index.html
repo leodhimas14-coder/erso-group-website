@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sq">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ERSO GROUP SHPK — Global Trade, Delivered</title>
-<meta name="description" content="ERSO GROUP SHPK — sourcing, trucking, sea and air freight, and customs clearance. Global trade, delivered end to end.">
+<title>ERSO GROUP SHPK — Sourcing &amp; Import Kinë–Shqipëri</title>
+<meta name="description" content="ERSO GROUP SHPK — gjejmë fabrikën, negociojmë çmimin, inspektojmë, blejmë, paketojmë, dërgojmë dhe zhdoganojmë. Shërbim i plotë sourcing nga Kina në Shqipëri.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,9 +16,10 @@
   <div class="site-header__inner">
     <a class="brand" href="#top">ERSO <span>GROUP</span></a>
     <nav class="site-nav">
-      <a href="#services">Services</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+      <a href="#steps">Si punojmë</a>
+      <a href="#services">Shërbimet</a>
+      <a href="#about">Rreth nesh</a>
+      <a href="#contact">Kontakt</a>
     </nav>
   </div>
 </header>
@@ -26,7 +27,7 @@
 <main id="top">
 
   <!-- ============ SCROLL-DRIVEN HERO JOURNEY ============ -->
-  <section class="scroll-journey" id="journey" aria-label="Cargo journey animation">
+  <section class="scroll-journey" id="journey" aria-label="Animacioni i rrugëtimit të mallit">
     <div class="scene-sticky">
       <div class="scene" id="scene">
 
@@ -182,14 +183,17 @@
         <!-- Shot 12: hero content settles in -->
         <div class="el hero-content" id="heroContent">
           <p class="hero-eyebrow">ERSO GROUP SHPK</p>
-          <h1>Global Trade,<br>Delivered.</h1>
-          <p class="hero-sub">From factory floor to final mile — sourcing, trucking, ocean and air freight, and customs clearance, handled as one seamless journey.</p>
-          <a class="btn" href="#services">Explore Our Services</a>
+          <h1>Nga fabrika në Kinë,<br>deri te dera juaj.</h1>
+          <p class="hero-sub">Gjejmë fabrikën, negociojmë çmimin, inspektojmë, blejmë, paketojmë, dërgojmë dhe zhdoganojmë — një partner i vetëm për gjithë importin tuaj.</p>
+          <a class="btn" href="#steps">Si punojmë</a>
         </div>
+
+        <!-- Step caption (updated by scroll progress) -->
+        <div class="step-caption" id="stepCaption" aria-live="polite"><span class="step-caption__num"></span><span class="step-caption__text"></span></div>
 
         <!-- Scroll cue -->
         <div class="scroll-cue" id="scrollCue" aria-hidden="true">
-          <span>Scroll</span>
+          <span>Lëviz poshtë</span>
           <div class="scroll-cue__line"></div>
         </div>
 
@@ -197,36 +201,53 @@
     </div>
   </section>
 
+  <!-- ============ STEPS ============ -->
+  <section class="section steps" id="steps">
+    <div class="container">
+      <p class="section-eyebrow">Si punojmë</p>
+      <h2>7 hapa, nga Kina në Shqipëri</h2>
+      <ol class="steps__list">
+        <li class="step"><span class="step__num">01</span><h3>Gjejmë fabrikën</h3><p>Kërkojmë dhe verifikojmë prodhuesit e duhur në Kinë për produktin tuaj.</p></li>
+        <li class="step"><span class="step__num">02</span><h3>Negociojmë çmimin</h3><p>Bisedojmë drejtpërdrejt me fabrikën për çmimin, sasinë minimale dhe afatet.</p></li>
+        <li class="step"><span class="step__num">03</span><h3>Inspektojmë</h3><p>Kontrollojmë cilësinë e mallit para se të paguhet dhe të largohet nga fabrika.</p></li>
+        <li class="step"><span class="step__num">04</span><h3>Blejmë</h3><p>Kryejmë pagesën dhe porosinë në emrin tuaj, në mënyrë të sigurt.</p></li>
+        <li class="step"><span class="step__num">05</span><h3>Paketojmë</h3><p>Mallin e paketojmë dhe e ngarkojmë në kontejner, gati për udhëtim.</p></li>
+        <li class="step"><span class="step__num">06</span><h3>Dërgojmë</h3><p>Transport me kamion, det ose ajër — sipas buxhetit dhe afatit tuaj.</p></li>
+        <li class="step"><span class="step__num">07</span><h3>Zhdoganojmë</h3><p>Merremi me doganën në Shqipëri dhe jua dorëzojmë mallin gati për shitje.</p></li>
+      </ol>
+    </div>
+  </section>
+
   <!-- ============ SERVICES ============ -->
   <section class="section services" id="services">
     <div class="container">
-      <p class="section-eyebrow">What We Do</p>
-      <h2>End-to-end logistics, one partner</h2>
+      <p class="section-eyebrow">Shërbimet</p>
+      <h2>Import i plotë, një partner i vetëm</h2>
       <div class="cards">
         <article class="card">
           <div class="card__icon">🏭</div>
-          <h3>Sourcing &amp; Quality Control</h3>
-          <p>We vet suppliers, inspect goods before they leave the factory, and protect your supply chain from day one.</p>
+          <h3>Sourcing &amp; kontroll cilësie</h3>
+          <p>Verifikojmë furnitorët dhe inspektojmë mallin në fabrikë, që të mos keni surpriza.</p>
         </article>
         <article class="card">
           <div class="card__icon">🚛</div>
-          <h3>Trucking &amp; Inland Transport</h3>
-          <p>Reliable inland haulage connecting factories, ports, and warehouses across every leg of the journey.</p>
+          <h3>Transport tokësor</h3>
+          <p>Lidhim fabrikat, portet dhe magazinat me transport të sigurt me kamion.</p>
         </article>
         <article class="card">
           <div class="card__icon">🚢</div>
-          <h3>Sea Freight</h3>
-          <p>FCL and LCL ocean freight with competitive rates and full visibility from booking to discharge.</p>
+          <h3>Transport detar</h3>
+          <p>Kontejnerë të plotë (FCL) ose ngarkesa të përbashkëta (LCL) me çmime konkurruese.</p>
         </article>
         <article class="card">
           <div class="card__icon">✈️</div>
-          <h3>Air Freight</h3>
-          <p>Time-critical air cargo solutions for shipments that simply can't wait for the sea.</p>
+          <h3>Transport ajror</h3>
+          <p>Për mallrat që s'mund të presin — dërgesë e shpejtë nga Kina në Shqipëri.</p>
         </article>
         <article class="card">
           <div class="card__icon">📋</div>
-          <h3>Customs Clearance</h3>
-          <p>Licensed customs brokerage and compliance handling that keeps your cargo moving, not waiting.</p>
+          <h3>Zhdoganim</h3>
+          <p>Dokumentacioni dhe procedurat doganore, që malli juaj të lëvizë pa vonesa.</p>
         </article>
       </div>
     </div>
@@ -236,15 +257,15 @@
   <section class="section about" id="about">
     <div class="container about__grid">
       <div>
-        <p class="section-eyebrow">About Us</p>
-        <h2>Built on trust, moved by precision</h2>
-        <p>ERSO GROUP SHPK is a freight forwarding and logistics company built around one idea: cargo should move with the same care and attention as the business behind it. From the first inspection at origin to final customs clearance, our team manages every handoff so you don't have to.</p>
-        <p>We work with manufacturers, importers, and distributors who need a logistics partner that treats their shipments like their own.</p>
+        <p class="section-eyebrow">Rreth nesh</p>
+        <h2>Besim dhe saktësi në çdo dërgesë</h2>
+        <p>ERSO GROUP SHPK është kompani sourcing-u dhe logjistike që i shërben bizneseve shqiptare që importojnë nga Kina. Nga inspektimi i parë në fabrikë deri te zhdoganimi në Shqipëri, ne menaxhojmë çdo hap që ju të përqendroheni te biznesi.</p>
+        <p>Punojmë me tregtarë, importues dhe shpërndarës që duan një partner që e trajton mallin e tyre si të vetin.</p>
       </div>
       <div class="about__stats">
-        <div class="stat"><span class="stat__num">15+</span><span class="stat__label">Years combined experience</span></div>
-        <div class="stat"><span class="stat__num">40+</span><span class="stat__label">Countries served</span></div>
-        <div class="stat"><span class="stat__num">24/7</span><span class="stat__label">Shipment visibility</span></div>
+        <div class="stat"><span class="stat__num">15+</span><span class="stat__label">Vite përvojë të përbashkët</span></div>
+        <div class="stat"><span class="stat__num">40+</span><span class="stat__label">Vende partnere</span></div>
+        <div class="stat"><span class="stat__num">24/7</span><span class="stat__label">Ndjekje e dërgesës</span></div>
       </div>
     </div>
   </section>
@@ -253,20 +274,20 @@
   <section class="section contact" id="contact">
     <div class="container contact__grid">
       <div>
-        <p class="section-eyebrow">Get In Touch</p>
-        <h2>Let's move your cargo</h2>
-        <p>Tell us about your shipment and our team will get back to you with a tailored plan.</p>
+        <p class="section-eyebrow">Na kontaktoni</p>
+        <h2>Le ta sjellim mallin tuaj</h2>
+        <p>Na tregoni çfarë doni të importoni dhe ekipi ynë do t'ju kthejë përgjigje me një plan dhe ofertë.</p>
         <ul class="contact__info">
-          <li>📍 Tirana, Albania</li>
+          <li>📍 Tiranë, Shqipëri</li>
           <li>✉️ info@ersogroup.al</li>
           <li>📞 +355 4 000 0000</li>
         </ul>
       </div>
       <form class="contact__form" onsubmit="return false;">
-        <label>Name<input type="text" name="name" required></label>
+        <label>Emri<input type="text" name="name" required></label>
         <label>Email<input type="email" name="email" required></label>
-        <label>Message<textarea name="message" rows="4" required></textarea></label>
-        <button class="btn" type="submit">Send Message</button>
+        <label>Mesazhi<textarea name="message" rows="4" required></textarea></label>
+        <button class="btn" type="submit">Dërgo mesazhin</button>
       </form>
     </div>
   </section>
@@ -275,7 +296,7 @@
 
 <footer class="site-footer">
   <div class="container">
-    <span>© 2026 ERSO GROUP SHPK. All rights reserved.</span>
+    <span>© 2026 ERSO GROUP SHPK. Të gjitha të drejtat të rezervuara.</span>
   </div>
 </footer>
 
