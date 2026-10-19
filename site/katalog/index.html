@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Katalogu — ERSO GROUP SHPK</title>
+<meta name="description" content="Katalogu i ERSO GROUP SHPK: makina, motorra, makineta, pajisje kuzhine, kondicionerë dhe mobileri me porosi nga Kina, me dorëzim te dera juaj.">
+<link rel="icon" href="../img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky brand bar → compact hero with category rail → filterable product grid; detail + admin open as sheets. Single dark look, matching the ERSO website. */
+:root{
+  --bg:#0a0a0c;
+  --panel:#131317;
+  --panel-2:#1a1b20;
+  --line:#2a2b31;
+  --silver:#c9ccd1;
+  --silver-bright:#f2f3f5;
+  --muted:#93959c;
+  --red:#c81f2f;
+  --red-hover:#e0273a;
+  --red-glow:rgba(200,31,47,.35);
+  --ok:#3fb27f;
+  --warn:#e3a43a;
+  --info:#6aa8e8;
+  --display:'Oswald', 'Arial Narrow', sans-serif;
+  --body:'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --r:3px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{background:var(--bg);color:var(--silver-bright);font-family:var(--body);line-height:1.55;font-size:15px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);font-weight:600;letter-spacing:.03em;text-wrap:balance;margin:0}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--red);font-weight:600}
+.eyebrow::before{content:"";width:24px;height:1px;background:var(--red)}
+
+/* Header */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(10,10,12,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0}
+.brand img{height:38px;width:38px;object-fit:contain}
+.brand b{font-family:var(--display);font-weight:600;letter-spacing:.08em;font-size:15px;white-space:nowrap}
+.brand b span{color:var(--red)}
+.top-actions{display:flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:var(--r);border:1px solid transparent;font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:background .2s,border-color .2s,transform .2s;min-height:42px}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-hover)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--silver-bright)}
+.btn-ghost:hover{border-color:var(--silver)}
+.btn-sm{padding:7px 12px;min-height:34px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* Hero */
+.hero{position:relative;padding-block:44px 28px;background:radial-gradient(ellipse 70% 80% at 50% 0%,rgba(200,31,47,.13),transparent 65%);overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(201,204,209,.09) 1px,transparent 1px);background-size:14px 14px;mask-image:radial-gradient(ellipse 55% 70% at 50% 10%,#000,transparent 75%);pointer-events:none}
+.hero .wrap{position:relative;z-index:1;display:grid;gap:14px}
+.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.05;text-transform:uppercase;max-width:16ch}
+.hero h1 em{font-style:normal;background:linear-gradient(180deg,#fff,var(--silver) 60%,#8d9096);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);max-width:60ch;margin:0;font-size:16px}
+.route{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:13px;letter-spacing:.1em;color:var(--silver);margin-top:4px}
+.route i{flex:0 1 120px;height:1px;background:repeating-linear-gradient(90deg,var(--red) 0 6px,transparent 6px 12px)}
+
+/* Category rail */
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-block:8px 6px}
+.cat{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+.cat:hover{border-color:var(--silver)}
+.cat[aria-pressed="true"]{border-color:var(--red);background:linear-gradient(160deg,rgba(200,31,47,.16),var(--panel) 70%)}
+.cat .ic{font-size:24px;line-height:1}
+.cat .nm{font-family:var(--display);font-weight:600;letter-spacing:.04em;font-size:15px;text-transform:uppercase}
+.cat .ct{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-block:22px 16px;border-bottom:1px solid var(--line)}
+.toolbar h2{font-size:22px;text-transform:uppercase}
+.toolbar .sub{color:var(--muted);font-size:13px}
+.search{display:flex;gap:8px;flex:1 1 260px;max-width:420px}
+.field{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-height:42px}
+.field:focus{border-color:var(--silver);outline:none}
+select.field{appearance:auto}
+
+/* Product grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;padding-block:20px 60px}
+.card{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
+.card .ph{position:relative;aspect-ratio:4/3;background:var(--panel-2);display:grid;place-items:center;cursor:pointer;max-width:100%;border:0;padding:0;width:100%}
+.card .ph{overflow:hidden}
+.card .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.card:hover .ph img{transform:scale(1.04)}
+.ph .noimg{font-size:44px;opacity:.5}
+.pill{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(10,10,12,.82);border:1px solid currentColor}
+.st-stok{color:var(--ok)}.st-porosi{color:var(--warn)}.st-rruge{color:var(--info)}
+.card .bd{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px;flex:1}
+.card .cl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:18px;letter-spacing:.02em;line-height:1.2;overflow-wrap:anywhere}
+.price{font-family:var(--display);font-size:20px;color:var(--silver-bright);font-variant-numeric:tabular-nums}
+.price small{font-family:var(--body);font-size:12px;color:var(--muted);margin-left:4px;font-weight:500}
+.price.ask{font-size:15px;color:var(--silver)}
+.card .ft{display:flex;gap:8px;margin-top:auto;padding-top:8px}
+.card .ft .btn{flex:1}
+
+.empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+.empty b{font-family:var(--display);font-size:20px;color:var(--silver-bright);letter-spacing:.04em;text-transform:uppercase}
+
+/* How + contact strip */
+.how{border-top:1px solid var(--line);background:var(--panel);padding-block:40px}
+.how-in{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+.how-step{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.how-step .n{font-family:var(--display);font-size:28px;color:transparent;-webkit-text-stroke:1px var(--silver);line-height:1}
+.how-step h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.how-step p{margin:0;color:var(--muted);font-size:14px}
+footer.ft{border-top:1px solid var(--line);padding-block:24px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.phone{font-family:var(--display);color:var(--silver-bright);letter-spacing:.06em;font-size:16px;user-select:all}
+
+/* Sheets (modal) */
+.sheet{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.66)}
+.sheet-box{background:var(--panel);border:1px solid var(--line);border-radius:4px;width:min(960px,100%);max-height:100%;overflow:auto;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.x{position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(10,10,12,.85);cursor:pointer;font-size:18px}
+.detail{display:grid;grid-template-columns:1.1fr 1fr}
+@media (max-width:760px){.detail{grid-template-columns:1fr}}
+.gal{background:var(--panel-2);min-width:0}
+.gal-main{aspect-ratio:4/3;display:grid;place-items:center;max-width:100%}
+.gal-main img{width:100%;height:100%;object-fit:contain;background:#000}
+.thumbs{display:flex;gap:6px;padding:8px;overflow-x:auto}
+.thumbs button{flex:0 0 64px;height:52px;border:1px solid var(--line);padding:0;background:none;cursor:pointer;border-radius:2px;overflow:hidden}
+.thumbs button[aria-current="true"]{border-color:var(--red)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.info{padding:26px 24px;display:grid;gap:14px;align-content:start;min-width:0}
+.info h2{font-size:26px;line-height:1.15;overflow-wrap:anywhere;padding-right:34px}
+.info .desc{color:var(--silver);margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.specs{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.specs li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.specs li span:first-child{color:var(--muted)}
+.specs li span:last-child{text-align:right;overflow-wrap:anywhere}
+.interest{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px}
+.interest h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em}
+.interest p{margin:0;color:var(--muted);font-size:13.5px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+.toast{display:none}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+body{margin:0}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap}
+@media (max-width:460px){.brand b{display:none}}
+.pill.real{left:auto;right:10px;color:var(--silver-bright);border-color:var(--silver)}
+.trust{display:grid;grid-template-columns:1.2fr 2fr;gap:24px;align-items:center;padding-block:36px}
+@media (max-width:760px){.trust{grid-template-columns:1fr}}
+.trust h2{font-size:22px;text-transform:uppercase;margin-top:10px}
+.trust p{color:var(--muted);margin:8px 0 0}
+.trust-imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.trust-imgs img{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);border-radius:2px;max-width:100%}
+.ico{display:inline-grid;place-items:center;width:58px;height:58px;flex-shrink:0;border-radius:6px;background:radial-gradient(circle at 30% 15%,rgba(255,255,255,.07),transparent 60%),linear-gradient(160deg,#23242b,#111114);border:1px solid #34353d;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(200,31,47,.45),0 12px 26px rgba(0,0,0,.4)}
+.ico svg{width:36px;height:36px;fill:none;stroke:url(#icoSilver);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ico svg .a{stroke:var(--red)}
+.ico-sm{width:46px;height:46px}
+.ico-sm svg{width:28px;height:28px}
+.cat .ico{margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="icoSilver" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="44"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8f939b"/></linearGradient></defs></svg>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="../"><img src="../img/logo.png" alt="ERSO GROUP SHPK"><b>ERSO <span>GROUP</span> SHPK</b></a>
+    <div class="top-actions">
+      <a class="btn btn-ghost btn-sm" href="../">Faqja kryesore</a>
+      <a class="btn btn-red btn-sm" href="#kontakt">Kontakt</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Katalogu · Me porosi nga Kina</span>
+    <h1>Zgjidh produktin, <em>ne e sjellim te dera</em></h1>
+    <p>Makina, motorra, pajisje kuzhine, kondicionerë, mobilieri dhe më shumë. Shikoni çfarë kemi gati ose me porosi, dhe na shkruani për produktin që ju intereson.</p>
+    <div class="route" aria-hidden="true">CN <i></i> DURRËS <i></i> DERA JUAJ</div>
+  </div>
+</section>
+
+<main id="katalogu">
+  <div class="wrap">
+    <nav class="cats" id="cats" aria-label="Kategoritë"></nav>
+    <div class="toolbar">
+      <div>
+        <h2 id="listTitle">Të gjitha produktet</h2>
+        <div class="sub" id="listSub"></div>
+      </div>
+      <div class="search">
+        <label class="vh" for="q">Kërko</label>
+        <input class="field" id="q" type="search" placeholder="Kërko produkt…" autocomplete="off">
+      </div>
+    </div>
+    <div class="grid" id="grid">
+      <div class="empty"><b>Duke ngarkuar katalogun…</b></div>
+    </div>
+  </div>
+</main>
+
+<section style="border-top:1px solid var(--line)">
+  <div class="wrap trust">
+    <div>
+      <span class="eyebrow">Nga terreni</span>
+      <h2>Ngarkesa reale, klientë realë</h2>
+      <p>Çdo porosi inspektohet në fabrikë para ngarkimit. Këto janë foto nga dërgesat tona, nga fabrika në Kinë deri në Shqipëri.</p>
+      <p><a class="btn btn-ghost btn-sm" href="../#galeria" style="margin-top:6px">Shiko galerinë</a></p>
+    </div>
+    <div class="trust-imgs">
+      <img src="../img/galeri-1.jpg" alt="Ngarkim në kamion me karrelevator" loading="lazy">
+      <img src="../img/galeri-5.jpg" alt="Makineri e paketuar në kasë druri" loading="lazy">
+      <img src="../img/galeri-6.jpg" alt="Dorëzim në Shqipëri" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="how" id="kontakt">
+  <div class="wrap how-in">
+    <div class="how-step"><span class="n">01</span><div><h3>Zgjidhni produktin</h3><p>Shtypni "Jam i interesuar" te produkti që ju pëlqen.</p></div></div>
+    <div class="how-step"><span class="n">02</span><div><h3>Na shkruani</h3><p>Mesazhi në WhatsApp hapet gati me emrin e produktit.</p></div></div>
+    <div class="how-step"><span class="n">03</span><div><h3>Ofertë brenda 24 orëve</h3><p>Ju dërgojmë çmimin final, afatin dhe kushtet e transportit.</p></div></div>
+    <div class="how-step"><span class="n">04</span><div><h3>Dorëzim te dera</h3><p>Inspektim, transport dhe zhdoganim i menaxhuar nga ne.</p></div></div>
+  </div>
+</section>
+
+<footer class="ft">
+  <div class="wrap">
+    <span>© 2026 ERSO GROUP SHPK · Durrës, Shqipëri · E Hënë – E Shtunë, 09:00–18:00</span>
+    <span>Tel / WhatsApp: <a class="phone" href="tel:+355694655011">+355 69 465 5011</a></span>
+  </div>
+</footer>
+
+<!-- Product detail -->
+<div class="sheet" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
+  <div class="sheet-box">
+    <button class="x" type="button" data-close aria-label="Mbyll">✕</button>
+    <div class="detail">
+      <div class="gal"><div class="gal-main" id="dMain"></div><div class="thumbs" id="dThumbs"></div></div>
+      <div class="info">
+        <div id="dCat" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)"></div>
+        <h2 id="dTitle"></h2>
+        <div id="dPrice"></div>
+        <p class="desc" id="dDesc"></p>
+        <ul class="specs" id="dSpecs"></ul>
+        <div class="interest">
+          <h3>Ju intereson ky produkt?</h3>
+          <p>Na shkruani në WhatsApp ose na telefononi. Ju kthejmë përgjigje me ofertë brenda 24 orëve.</p>
+          <div class="row">
+            <a class="btn btn-red" id="dWa" href="#" target="_blank" rel="noopener">Shkruaj në WhatsApp</a>
+            <a class="btn btn-ghost" href="tel:+355694655011">Telefono</a>
+          </div>
+          <div class="row"><span class="phone">+355 69 465 5011</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var PHONE = '355694655011';
+  var STATUS = { porosi: 'Me porosi', stok: 'Në stok', rruge: 'Në rrugë' };
+  var state = { categories: [], products: [] };
+  var ui = { cat: 'all', q: '' };
+  var onNetlify = !/^(localhost|127\.|file)/.test(location.hostname || 'file');
+
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === 'text') n.textContent = attrs[k];
+      else if (k === 'class') n.className = attrs[k];
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+  // Netlify Image CDN resizes the owner's full-size phone photos on the fly;
+  // fall back to the original file anywhere it isn't available.
+  function img(src, w, alt, lazy) {
+    var url = onNetlify && src.charAt(0) === '/' ? '/.netlify/images?url=' + encodeURIComponent(src) + '&w=' + w + '&q=80' : src;
+    var i = el('img', { src: url, alt: alt || '' });
+    if (lazy) i.loading = 'lazy';
+    i.addEventListener('error', function once() { i.removeEventListener('error', once); if (i.src.indexOf('/.netlify/images') !== -1) i.src = src; });
+    return i;
+  }
+  var CAT_ICONS = {"makina": "<path d=\"M4 33v-8l6-9h21l8 9h5v8z\"/><circle cx=\"13\" cy=\"34\" r=\"4.5\"/><circle cx=\"35\" cy=\"34\" r=\"4.5\"/><path class=\"a\" d=\"M12 25l4-6h7v6z\"/><path class=\"a\" d=\"M26 25v-6h3l5 6z\"/>", "motorra": "<circle cx=\"10\" cy=\"33\" r=\"7\"/><circle cx=\"38\" cy=\"33\" r=\"7\"/><path d=\"M10 33l8-12h11l9 12\"/><path d=\"M29 21l4-7h6\"/><path d=\"M18 21l-3-5h-5\"/><path class=\"a\" d=\"M19 25h10\"/><circle class=\"a\" cx=\"10\" cy=\"33\" r=\"1.5\"/><circle class=\"a\" cx=\"38\" cy=\"33\" r=\"1.5\"/>", "makineta": "<circle cx=\"11\" cy=\"36\" r=\"5\"/><circle cx=\"37\" cy=\"36\" r=\"5\"/><path d=\"M11 36h12l6-7h8\"/><path d=\"M33 29l3-19h6\"/><path d=\"M13 26h12v3\"/><path class=\"a\" d=\"M36 10h-4\"/><path class=\"a\" d=\"M16 22h7\"/>", "kuzhine": "<path d=\"M10 20h28v14a5 5 0 01-5 5H15a5 5 0 01-5-5z\"/><path d=\"M5 22h5M38 22h5\"/><path d=\"M12 16h24M24 12v4\"/><path class=\"a\" d=\"M16 45c-1-2 2-3 1-5M24 45c-1-2 2-3 1-5M32 45c-1-2 2-3 1-5\"/>", "kondicionere": "<rect x=\"4\" y=\"9\" width=\"40\" height=\"17\" rx=\"3\"/><path d=\"M8 21h32\"/><circle cx=\"37\" cy=\"14\" r=\"1.2\"/><path class=\"a\" d=\"M14 31c-2 3 2 5 0 9M24 31c-2 3 2 5 0 9M34 31c-2 3 2 5 0 9\"/>", "mobileri": "<path d=\"M10 22v-8a4 4 0 014-4h20a4 4 0 014 4v8\"/><path d=\"M4 25a4 4 0 018 0v6h24v-6a4 4 0 018 0v11H4z\"/><path d=\"M8 36v5M40 36v5\"/><path class=\"a\" d=\"M24 11v14\"/>", "all": "<path d=\"M8 8h13v13H8zM27 8h13v13H27zM8 27h13v13H8z\"/><path class=\"a\" d=\"M27 27h13v13H27z\"/>"};
+  function catIcon(c) {
+    var inner = CAT_ICONS[c.id];
+    if (!inner) return el('span', { class: 'ic', text: c.icon || '📦', 'aria-hidden': 'true' });
+    var s = el('span', { class: 'ico ico-sm', 'aria-hidden': 'true' });
+    s.innerHTML = '<svg viewBox="0 0 48 48" focusable="false">' + inner + '</svg>';
+    return s;
+  }
+  function catOf(id) { return state.categories.find(function (c) { return c.id === id; }) || { name: 'Të tjera', icon: '📦' }; }
+  function fmtPrice(p) {
+    if (p.price == null || isNaN(p.price)) return null;
+    var s = Number(p.price).toLocaleString('sq-AL', { maximumFractionDigits: 0 }).replace(/ /g, ' ');
+    return p.currency === 'Lekë' ? s + ' Lekë' : (p.currency || '€') + ' ' + s;
+  }
+  function priceNode(p, big) {
+    var f = fmtPrice(p);
+    if (!f) return el('div', { class: 'price ask', text: 'Çmimi sipas kërkesës' });
+    var d = el('div', { class: 'price', text: f });
+    if (big) d.appendChild(el('small', { text: 'çmim orientues' }));
+    return d;
+  }
+  function waLink(p) {
+    var text = 'Përshëndetje ERSO GROUP! Jam i interesuar për: ' + p.name + ' (' + catOf(p.cat).name + '). Më dërgoni ofertën, ju lutem.';
+    return 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(text);
+  }
+
+  function visible() {
+    var q = ui.q.trim().toLowerCase();
+    return state.products.filter(function (p) {
+      if (ui.cat !== 'all' && p.cat !== ui.cat) return false;
+      if (!q) return true;
+      return (p.name + ' ' + (p.desc || '') + ' ' + catOf(p.cat).name).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderCats() {
+    var box = $('cats'); box.textContent = '';
+    [{ id: 'all', name: 'Të gjitha', icon: '◎' }].concat(state.categories).forEach(function (c) {
+      var n = c.id === 'all' ? state.products.length : state.products.filter(function (p) { return p.cat === c.id; }).length;
+      box.appendChild(el('button', {
+        class: 'cat', type: 'button', 'aria-pressed': String(ui.cat === c.id),
+        onclick: function () { selectCat(c.id, true); }
+      }, [
+        catIcon(c),
+        el('span', { class: 'nm', text: c.name }),
+        el('span', { class: 'ct', text: n === 1 ? '1 produkt' : n + ' produkte' })
+      ]));
+    });
+  }
+
+  function renderGrid() {
+    var grid = $('grid'); grid.textContent = '';
+    var list = visible();
+    var c = ui.cat === 'all' ? null : catOf(ui.cat);
+    $('listTitle').textContent = c ? c.name : 'Të gjitha produktet';
+    $('listSub').textContent = list.length === 1 ? '1 produkt' : list.length + ' produkte';
+    if (!list.length) {
+      var msg = ui.q ? 'Asnjë produkt nuk përputhet me "' + ui.q + '".' :
+        'Së shpejti produkte të reja këtu. Ndërkohë na shkruani çfarë kërkoni dhe e gjejmë për ju.';
+      grid.appendChild(el('div', { class: 'empty' }, [
+        el('b', { text: c ? c.name + ': ende pa produkte' : 'Ende pa produkte' }),
+        el('span', { text: msg }),
+        ui.q ? null : el('a', { class: 'btn btn-red', href: 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent('Përshëndetje ERSO GROUP! Po kërkoj ' + (c ? c.name.toLowerCase() : 'një produkt') + '.'), target: '_blank', rel: 'noopener', text: 'Na shkruani në WhatsApp' })
+      ]));
+      return;
+    }
+    list.forEach(function (p) {
+      var ph = el('button', { class: 'ph', type: 'button', 'aria-label': 'Shiko ' + p.name, onclick: function () { openDetail(p.id); } }, [
+        p.photos.length ? img(p.photos[0], 640, p.name, true) : el('span', { class: 'noimg', text: catOf(p.cat).icon || '📦' }),
+        el('span', { class: 'pill st-' + (p.status || 'porosi'), text: STATUS[p.status] || STATUS.porosi }),
+        p.realPhotos ? el('span', { class: 'pill real', text: '✓ Foto reale' }) : null
+      ]);
+      grid.appendChild(el('article', { class: 'card' }, [ph, el('div', { class: 'bd' }, [
+        el('span', { class: 'cl', text: catOf(p.cat).name + (p.photos.length > 1 ? ' · ' + p.photos.length + ' foto' : '') }),
+        el('h3', { text: p.name }),
+        priceNode(p),
+        el('div', { class: 'ft' }, [
+          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', text: 'Detaje', onclick: function () { openDetail(p.id); } }),
+          el('a', { class: 'btn btn-red btn-sm', href: waLink(p), target: '_blank', rel: 'noopener', text: 'Jam i interesuar' })
+        ])
+      ])]));
+    });
+  }
+
+  function renderAll() { renderCats(); renderGrid(); }
+
+  function selectCat(id, push) {
+    ui.cat = id; renderAll();
+    if (push) history.replaceState(null, '', id === 'all' ? location.pathname : '#' + id);
+  }
+
+  var lastFocus = null;
+  function openSheet() { lastFocus = document.activeElement; $('detail').hidden = false; document.body.style.overflow = 'hidden'; $('detail').querySelector('[data-close]').focus(); }
+  function closeSheet() { $('detail').hidden = true; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  $('detail').addEventListener('click', function (e) { if (e.target === $('detail') || e.target.closest('[data-close]')) closeSheet(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('detail').hidden) closeSheet(); });
+
+  function openDetail(id) {
+    var p = state.products.find(function (x) { return x.id === id; }); if (!p) return;
+    $('dCat').textContent = (catOf(p.cat).icon || '') + ' ' + catOf(p.cat).name + ' · ' + (STATUS[p.status] || STATUS.porosi) + (p.realPhotos ? ' · ✓ Foto reale' : '');
+    $('dTitle').textContent = p.name;
+    var pr = $('dPrice'); pr.textContent = ''; pr.appendChild(priceNode(p, true));
+    $('dDesc').textContent = p.desc || ''; $('dDesc').hidden = !p.desc;
+    var sp = $('dSpecs'); sp.textContent = '';
+    p.specs.concat(p.delivery ? [['Afati i dorëzimit', p.delivery]] : []).forEach(function (s) {
+      sp.appendChild(el('li', null, [el('span', { text: s[0] }), el('span', { text: s[1] })]));
+    });
+    sp.hidden = !sp.children.length;
+    var main = $('dMain'), th = $('dThumbs'); main.textContent = ''; th.textContent = '';
+    function show(i) {
+      main.textContent = '';
+      main.appendChild(img(p.photos[i], 1400, p.name + ' – foto ' + (i + 1)));
+      Array.prototype.forEach.call(th.children, function (b, j) { b.setAttribute('aria-current', String(i === j)); });
+    }
+    if (p.photos.length) {
+      p.photos.forEach(function (ph, i) { th.appendChild(el('button', { type: 'button', 'aria-label': 'Foto ' + (i + 1), onclick: function () { show(i); } }, [img(ph, 160, '')])); });
+      show(0);
+    } else main.appendChild(el('span', { class: 'noimg', style: 'font-size:64px;opacity:.5', text: catOf(p.cat).icon || '📦' }));
+    th.hidden = p.photos.length < 2;
+    $('dWa').href = waLink(p);
+    openSheet();
+  }
+
+  $('q').addEventListener('input', function (e) { ui.q = e.target.value; renderGrid(); });
+
+  fetch('../data/catalog.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+    state = { categories: d.categories || [], products: d.products || [] };
+    var h = location.hash.slice(1);
+    if (h && state.categories.some(function (c) { return c.id === h; })) ui.cat = h;
+    renderAll();
+  }, function () {
+    $('grid').textContent = '';
+    $('grid').appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Katalogu nuk u ngarkua' }), el('span', { text: 'Rifreskoni faqen. Nëse vazhdon, na kontaktoni në +355 69 465 5011.' })]));
+  });
+  window.addEventListener('hashchange', function () {
+    var h = location.hash.slice(1);
+    if (state.categories.some(function (c) { return c.id === h; })) { selectCat(h, false); document.getElementById('katalogu').scrollIntoView(); }
+  });
+})();
+</script>
+</body>
+</html>

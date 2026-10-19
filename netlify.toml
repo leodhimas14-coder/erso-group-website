@@ -1,0 +1,9 @@
+[build]
+  publish = "site"
+  command = "node scripts/build-catalog.js"
+
+# The CMS content is the source of truth; never cache the generated catalog.
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "no-cache"

@@ -1,0 +1,10 @@
+{
+  "kategorite": [
+    { "id": "makina", "emri": "Makina", "ikona": "🚗" },
+    { "id": "motorra", "emri": "Motorra", "ikona": "🏍️" },
+    { "id": "makineta", "emri": "Makineta & Skuter", "ikona": "🛵" },
+    { "id": "kuzhine", "emri": "Pajisje Kuzhine", "ikona": "🍳" },
+    { "id": "kondicionere", "emri": "Kondicionerë", "ikona": "❄️" },
+    { "id": "mobileri", "emri": "Mobileri", "ikona": "🛋️" }
+  ]
+}
