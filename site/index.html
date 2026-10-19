@@ -490,6 +490,113 @@
   [data-i18n]{display:block;}
   .reveal{ animation:pageFadeIn .7s ease both; }
   @keyframes pageFadeIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+
+/* ===== Katalogu (scoped) ===== */
+.kt{--panel:#131317;--panel-2:#1a1b20;--muted:#93959c;--red-hover:#e0273a;--ok:#3fb27f;--warn:#e3a43a;--info:#6aa8e8;--display:'Oswald','Arial Narrow',sans-serif;--body:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;--r:3px;font-family:var(--body);color:var(--silver-bright)}
+.kt h2,.kt h3{font-family:var(--display);font-weight:600;letter-spacing:.03em;text-wrap:balance;margin:0}
+.kt button,.kt input,.kt select,.kt textarea{font:inherit;color:inherit}
+.kt :focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.kt-admin-row{display:flex;justify-content:flex-end;margin-bottom:6px}
+.kt [hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){.kt *{transition:none!important;animation:none!important}}
+.kt .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:var(--r);border:1px solid transparent;font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:background .2s,border-color .2s,transform .2s;min-height:42px}
+.kt .btn-red{background:var(--red);color:#fff}
+.kt .btn-red:hover{background:var(--red-hover)}
+.kt .btn-ghost{background:transparent;border-color:var(--line);color:var(--silver-bright)}
+.kt .btn-ghost:hover{border-color:var(--silver)}
+.kt .btn-sm{padding:7px 12px;min-height:34px;font-size:12px}
+.kt .btn[disabled]{opacity:.5;cursor:not-allowed}
+.kt .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-block:8px 6px}
+.kt .cat{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;text-align:left;transition:border-color .2s,background .2s}
+.kt .cat:hover{border-color:var(--silver)}
+.kt .cat[aria-pressed="true"]{border-color:var(--red);background:linear-gradient(160deg,rgba(200,31,47,.16),var(--panel) 70%)}
+.kt .cat .ic{font-size:24px;line-height:1}
+.kt .cat .nm{font-family:var(--display);font-weight:600;letter-spacing:.04em;font-size:15px;text-transform:uppercase}
+.kt .cat .ct{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.kt .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding-block:22px 16px;border-bottom:1px solid var(--line)}
+.kt .toolbar h2{font-size:22px;text-transform:uppercase}
+.kt .toolbar .sub{color:var(--muted);font-size:13px}
+.kt .search{display:flex;gap:8px;flex:1 1 260px;max-width:420px}
+.kt .field{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;min-height:42px}
+.kt .field:focus{border-color:var(--silver);outline:none}
+.kt select.field{appearance:auto}
+.kt .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;padding-block:20px 60px}
+.kt .card{display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
+.kt .card .ph{position:relative;aspect-ratio:4/3;background:var(--panel-2);display:grid;place-items:center;cursor:pointer;max-width:100%;border:0;padding:0;width:100%}
+.kt .card .ph{overflow:hidden}
+.kt .card .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.kt .card:hover .ph img{transform:scale(1.04)}
+.kt .ph .noimg{font-size:44px;opacity:.5}
+.kt .pill{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(10,10,12,.82);border:1px solid currentColor}
+.kt .st-stok{color:var(--ok)}
+.kt .st-porosi{color:var(--warn)}
+.kt .st-rruge{color:var(--info)}
+.kt .card .bd{display:flex;flex-direction:column;gap:6px;padding:14px 16px 16px;flex:1}
+.kt .card .cl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.kt .card h3{font-size:18px;letter-spacing:.02em;line-height:1.2;overflow-wrap:anywhere}
+.kt .price{font-family:var(--display);font-size:20px;color:var(--silver-bright);font-variant-numeric:tabular-nums}
+.kt .price small{font-family:var(--body);font-size:12px;color:var(--muted);margin-left:4px;font-weight:500}
+.kt .price.ask{font-size:15px;color:var(--silver)}
+.kt .card .ft{display:flex;gap:8px;margin-top:auto;padding-top:8px}
+.kt .card .ft .btn{flex:1}
+.kt .empty{grid-column:1/-1;border:1px dashed var(--line);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+.kt .empty b{font-family:var(--display);font-size:20px;color:var(--silver-bright);letter-spacing:.04em;text-transform:uppercase}
+.kt .phone{font-family:var(--display);color:var(--silver-bright);letter-spacing:.06em;font-size:16px;user-select:all}
+.kt .sheet{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.66)}
+.kt .sheet-box{background:var(--panel);border:1px solid var(--line);border-radius:4px;width:min(960px,100%);max-height:100%;overflow:auto;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.kt .x{position:absolute;top:10px;right:10px;z-index:2;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(10,10,12,.85);cursor:pointer;font-size:18px}
+.kt .detail{display:grid;grid-template-columns:1.1fr 1fr}
+@media (max-width:760px){.kt .detail{grid-template-columns:1fr}}
+.kt .gal{background:var(--panel-2);min-width:0}
+.kt .gal-main{aspect-ratio:4/3;display:grid;place-items:center;max-width:100%}
+.kt .gal-main img{width:100%;height:100%;object-fit:contain;background:#000}
+.kt .thumbs{display:flex;gap:6px;padding:8px;overflow-x:auto}
+.kt .thumbs button{flex:0 0 64px;height:52px;border:1px solid var(--line);padding:0;background:none;cursor:pointer;border-radius:2px;overflow:hidden}
+.kt .thumbs button[aria-current="true"]{border-color:var(--red)}
+.kt .thumbs img{width:100%;height:100%;object-fit:cover}
+.kt .info{padding:26px 24px;display:grid;gap:14px;align-content:start;min-width:0}
+.kt .info h2{font-size:26px;line-height:1.15;overflow-wrap:anywhere;padding-right:34px}
+.kt .info .desc{color:var(--silver);margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.kt .specs{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.kt .specs li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kt .specs li span:first-child{color:var(--muted)}
+.kt .specs li span:last-child{text-align:right;overflow-wrap:anywhere}
+.kt .interest{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:10px}
+.kt .interest h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em}
+.kt .interest p{margin:0;color:var(--muted);font-size:13.5px}
+.kt .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.kt .admin-box{width:min(1040px,100%)}
+.kt .admin-head{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.kt .admin-head h2{font-size:22px;text-transform:uppercase;padding-right:44px}
+.kt .admin-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media (max-width:820px){.kt .admin-body{grid-template-columns:1fr}}
+.kt .admin-col{padding:20px 24px;display:grid;gap:14px;align-content:start;min-width:0}
+.kt .admin-col+.admin-col{border-left:1px solid var(--line)}
+@media (max-width:820px){.kt .admin-col+.admin-col{border-left:0;border-top:1px solid var(--line)}}
+.kt .admin-col h3{font-size:15px;text-transform:uppercase;letter-spacing:.1em;color:var(--silver)}
+.kt label.lb{display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--silver)}
+.kt .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kt .hint{font-size:12px;color:var(--muted);font-weight:500}
+.kt .photos{display:flex;flex-wrap:wrap;gap:8px}
+.kt .photo{position:relative;width:84px;height:68px;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:var(--panel-2)}
+.kt .photo img{width:100%;height:100%;object-fit:cover}
+.kt .photo button{position:absolute;top:2px;right:2px;width:24px;height:24px;border-radius:50%;border:0;background:rgba(0,0,0,.75);cursor:pointer;font-size:13px;line-height:1}
+.kt .photo.add{display:grid;place-items:center;cursor:pointer;color:var(--muted);font-size:12px;text-align:center;border-style:dashed}
+.kt .list{display:grid;gap:6px;max-height:420px;overflow:auto}
+.kt .li{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel-2)}
+.kt .li img,.kt .li .noimg{width:52px;height:42px;object-fit:cover;border-radius:2px;display:grid;place-items:center;background:var(--bg)}
+.kt .li .t{min-width:0}
+.kt .li .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kt .li .t span{font-size:12px;color:var(--muted)}
+.kt .status{font-size:13px;padding:10px 12px;border-radius:var(--r);border:1px solid var(--line)}
+.kt .status.ok{border-color:var(--ok);color:var(--ok)}
+.kt .status.err{border-color:var(--red);color:#ff8a95}
+.kt .chips{display:flex;flex-wrap:wrap;gap:6px}
+.kt .chip{font-size:12px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;color:var(--silver)}
+.kt .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:90;background:var(--silver-bright);color:#0a0a0c;padding:10px 16px;border-radius:var(--r);font-weight:700;font-size:14px}
+.kt .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.kt #listTitle{scroll-margin-top:90px}
+.kt .pill.real{left:auto;right:10px;color:var(--silver-bright);border-color:var(--silver)}
 </style>
 </head>
 <body>
@@ -544,7 +651,7 @@
     <nav class="nav-links" id="navLinks">
       <a href="#rreth-nesh" data-i18n="nav.about"><span class="t-sq">Rreth Nesh</span><span class="t-en">About</span><span class="t-it">Chi Siamo</span><span class="t-el">Σχετικά</span><span class="t-sr">O Nama</span></a>
       <a href="#sherbimet" data-i18n="nav.services"><span class="t-sq">Shërbimet</span><span class="t-en">Services</span><span class="t-it">Servizi</span><span class="t-el">Υπηρεσίες</span><span class="t-sr">Usluge</span></a>
-      <a href="katalog/" data-i18n="nav.catalog"><span class="t-sq">Katalogu</span><span class="t-en">Catalog</span><span class="t-it">Catalogo</span><span class="t-el">Κατάλογος</span><span class="t-sr">Katalog</span></a>
+      <a href="#katalogu" data-i18n="nav.catalog"><span class="t-sq">Katalogu</span><span class="t-en">Catalog</span><span class="t-it">Catalogo</span><span class="t-el">Κατάλογος</span><span class="t-sr">Katalog</span></a>
       <a href="#klientet" data-i18n="nav.clients"><span class="t-sq">Klientët</span><span class="t-en">Clients</span><span class="t-it">Clienti</span><span class="t-el">Πελάτες</span><span class="t-sr">Klijenti</span></a>
       <a href="#procesi" data-i18n="nav.process"><span class="t-sq">Procesi</span><span class="t-en">Process</span><span class="t-it">Processo</span><span class="t-el">Διαδικασία</span><span class="t-sr">Proces</span></a>
       <a href="#galeria" data-i18n="nav.gallery"><span class="t-sq">Galeria</span><span class="t-en">Gallery</span><span class="t-it">Galleria</span><span class="t-el">Γκαλερί</span><span class="t-sr">Galerija</span></a>
@@ -718,45 +825,25 @@
     <div class="section-head reveal">
       <div class="eyebrow"><span class="t-sq">Katalogu</span><span class="t-en">Catalog</span><span class="t-it">Catalogo</span><span class="t-el">Κατάλογος</span><span class="t-sr">Katalog</span></div>
       <h2><span class="t-sq">Produkte që sjellim me porosi</span><span class="t-en">Products we bring to order</span><span class="t-it">Prodotti che portiamo su ordinazione</span><span class="t-el">Προϊόντα που φέρνουμε κατά παραγγελία</span><span class="t-sr">Proizvodi koje donosimo po porudžbini</span></h2>
-      <p><span class="t-sq">Shikoni produktet sipas kategorisë dhe na shkruani për atë që ju intereson. Çmimi final vjen me ofertë brenda 24 orëve.</span><span class="t-en">Browse products by category and message us about the one you like. The final price comes with a quote within 24 hours.</span><span class="t-it">Sfoglia i prodotti per categoria e scrivici per quello che ti interessa. Il prezzo finale arriva con un preventivo entro 24 ore.</span><span class="t-el">Δείτε τα προϊόντα ανά κατηγορία και γράψτε μας για αυτό που σας ενδιαφέρει. Η τελική τιμή έρχεται με προσφορά εντός 24 ωρών.</span><span class="t-sr">Pregledajte proizvode po kategorijama i pišite nam za onaj koji vas zanima. Konačna cena stiže uz ponudu u roku od 24 sata.</span></p>
+      <p><span class="t-sq">Zgjidhni kategorinë, shikoni produktet dhe shtypni "Jam i interesuar". Çmimi final vjen me ofertë brenda 24 orëve.</span><span class="t-en">Pick a category, browse the products and tap "I'm interested". The final price comes with a quote within 24 hours.</span><span class="t-it">Scegli una categoria, guarda i prodotti e premi "Sono interessato". Il prezzo finale arriva con un preventivo entro 24 ore.</span><span class="t-el">Επιλέξτε κατηγορία, δείτε τα προϊόντα και πατήστε «Ενδιαφέρομαι». Η τελική τιμή έρχεται με προσφορά εντός 24 ωρών.</span><span class="t-sr">Izaberite kategoriju, pogledajte proizvode i pritisnite „Zainteresovan sam". Konačna cena stiže uz ponudu u roku od 24 sata.</span></p>
     </div>
-  </div>
-  <div class="wrap">
-    <div class="services-grid reveal">
-      <a class="service-card" href="katalog/#makina">
-        <div class="service-num">🚗</div>
-        <h3><span class="t-sq">Makina</span><span class="t-en">Cars</span><span class="t-it">Auto</span><span class="t-el">Αυτοκίνητα</span><span class="t-sr">Automobili</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
-      <a class="service-card" href="katalog/#motorra">
-        <div class="service-num">🏍️</div>
-        <h3><span class="t-sq">Motorra</span><span class="t-en">Motorcycles</span><span class="t-it">Moto</span><span class="t-el">Μοτοσικλέτες</span><span class="t-sr">Motocikli</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
-      <a class="service-card" href="katalog/#makineta">
-        <div class="service-num">🛵</div>
-        <h3><span class="t-sq">Makineta & Skuter</span><span class="t-en">Mopeds & Scooters</span><span class="t-it">Ciclomotori & Scooter</span><span class="t-el">Μοτοποδήλατα & Σκούτερ</span><span class="t-sr">Mopedi i Skuteri</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
-      <a class="service-card" href="katalog/#kuzhine">
-        <div class="service-num">🍳</div>
-        <h3><span class="t-sq">Pajisje Kuzhine</span><span class="t-en">Kitchen Equipment</span><span class="t-it">Attrezzature da Cucina</span><span class="t-el">Εξοπλισμός Κουζίνας</span><span class="t-sr">Kuhinjska Oprema</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
-      <a class="service-card" href="katalog/#kondicionere">
-        <div class="service-num">❄️</div>
-        <h3><span class="t-sq">Kondicionerë</span><span class="t-en">Air Conditioners</span><span class="t-it">Condizionatori</span><span class="t-el">Κλιματιστικά</span><span class="t-sr">Klima Uređaji</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
-      <a class="service-card" href="katalog/#mobileri">
-        <div class="service-num">🛋️</div>
-        <h3><span class="t-sq">Mobileri</span><span class="t-en">Furniture</span><span class="t-it">Arredamento</span><span class="t-el">Έπιπλα</span><span class="t-sr">Nameštaj</span></h3>
-        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
-      </a>
+    <div class="kt">
+      <nav class="cats" id="cats" aria-label="Kategoritë"></nav>
+      <div class="toolbar">
+        <div>
+          <h2 id="listTitle">Të gjitha produktet</h2>
+          <div class="sub" id="listSub"></div>
+        </div>
+        <div class="search">
+          <label class="vh" for="q">Kërko</label>
+          <input class="field" id="q" type="search" placeholder="Kërko produkt…" autocomplete="off">
+        </div>
+      </div>
+      <div class="grid" id="grid">
+        <div class="empty"><b>Duke ngarkuar katalogun…</b></div>
+      </div>
     </div>
-    <div class="hero-ctas" style="margin-top:28px">
-      <a href="katalog/" class="btn btn-primary"><span class="t-sq">Hap katalogun</span><span class="t-en">Open the catalog</span><span class="t-it">Apri il catalogo</span><span class="t-el">Ανοίξτε τον κατάλογο</span><span class="t-sr">Otvori katalog</span></a>
-    </div>
+    <div class="hero-ctas" style="margin-top:22px"><a href="katalog/" class="btn btn-ghost"><span class="t-sq">Hap katalogun në faqe të plotë</span><span class="t-en">Open the full catalog page</span><span class="t-it">Apri il catalogo completo</span><span class="t-el">Ανοίξτε τον πλήρη κατάλογο</span><span class="t-sr">Otvori ceo katalog</span></a></div>
   </div>
 </section>
 
@@ -932,5 +1019,196 @@ try{
 }catch(e){ /* ignore: menu simply stays open until tapped again */ }
 </script>
 
+<div class="kt">
+<!-- Product detail -->
+<div class="sheet" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="dTitle">
+  <div class="sheet-box">
+    <button class="x" type="button" data-close aria-label="Mbyll">✕</button>
+    <div class="detail">
+      <div class="gal"><div class="gal-main" id="dMain"></div><div class="thumbs" id="dThumbs"></div></div>
+      <div class="info">
+        <div id="dCat" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)"></div>
+        <h2 id="dTitle"></h2>
+        <div id="dPrice"></div>
+        <p class="desc" id="dDesc"></p>
+        <ul class="specs" id="dSpecs"></ul>
+        <div class="interest">
+          <h3>Ju intereson ky produkt?</h3>
+          <p>Na shkruani në WhatsApp ose na telefononi. Ju kthejmë përgjigje me ofertë brenda 24 orëve.</p>
+          <div class="row">
+            <a class="btn btn-red" id="dWa" href="#" target="_blank" rel="noopener">Shkruaj në WhatsApp</a>
+            <a class="btn btn-ghost" href="tel:+355694655011">Telefono</a>
+          </div>
+          <div class="row"><span class="phone">+355 69 465 5011</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var PHONE = '355694655011';
+  var STATUS = { porosi: 'Me porosi', stok: 'Në stok', rruge: 'Në rrugë' };
+  var state = { categories: [], products: [] };
+  var ui = { cat: 'all', q: '' };
+  var onNetlify = !/^(localhost|127\.|file)/.test(location.hostname || 'file');
+
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === 'text') n.textContent = attrs[k];
+      else if (k === 'class') n.className = attrs[k];
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), attrs[k]);
+      else n.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+  // Netlify Image CDN resizes the owner's full-size phone photos on the fly;
+  // fall back to the original file anywhere it isn't available.
+  function img(src, w, alt, lazy) {
+    var url = onNetlify && src.charAt(0) === '/' ? '/.netlify/images?url=' + encodeURIComponent(src) + '&w=' + w + '&q=80' : src;
+    var i = el('img', { src: url, alt: alt || '' });
+    if (lazy) i.loading = 'lazy';
+    i.addEventListener('error', function once() { i.removeEventListener('error', once); if (i.src.indexOf('/.netlify/images') !== -1) i.src = src; });
+    return i;
+  }
+  function catOf(id) { return state.categories.find(function (c) { return c.id === id; }) || { name: 'Të tjera', icon: '📦' }; }
+  function fmtPrice(p) {
+    if (p.price == null || isNaN(p.price)) return null;
+    var s = Number(p.price).toLocaleString('sq-AL', { maximumFractionDigits: 0 }).replace(/ /g, ' ');
+    return p.currency === 'Lekë' ? s + ' Lekë' : (p.currency || '€') + ' ' + s;
+  }
+  function priceNode(p, big) {
+    var f = fmtPrice(p);
+    if (!f) return el('div', { class: 'price ask', text: 'Çmimi sipas kërkesës' });
+    var d = el('div', { class: 'price', text: f });
+    if (big) d.appendChild(el('small', { text: 'çmim orientues' }));
+    return d;
+  }
+  function waLink(p) {
+    var text = 'Përshëndetje ERSO GROUP! Jam i interesuar për: ' + p.name + ' (' + catOf(p.cat).name + '). Më dërgoni ofertën, ju lutem.';
+    return 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent(text);
+  }
+
+  function visible() {
+    var q = ui.q.trim().toLowerCase();
+    return state.products.filter(function (p) {
+      if (ui.cat !== 'all' && p.cat !== ui.cat) return false;
+      if (!q) return true;
+      return (p.name + ' ' + (p.desc || '') + ' ' + catOf(p.cat).name).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderCats() {
+    var box = $('cats'); box.textContent = '';
+    [{ id: 'all', name: 'Të gjitha', icon: '◎' }].concat(state.categories).forEach(function (c) {
+      var n = c.id === 'all' ? state.products.length : state.products.filter(function (p) { return p.cat === c.id; }).length;
+      box.appendChild(el('button', {
+        class: 'cat', type: 'button', 'aria-pressed': String(ui.cat === c.id),
+        onclick: function () { selectCat(c.id, true); }
+      }, [
+        el('span', { class: 'ic', text: c.icon || '📦', 'aria-hidden': 'true' }),
+        el('span', { class: 'nm', text: c.name }),
+        el('span', { class: 'ct', text: n === 1 ? '1 produkt' : n + ' produkte' })
+      ]));
+    });
+  }
+
+  function renderGrid() {
+    var grid = $('grid'); grid.textContent = '';
+    var list = visible();
+    var c = ui.cat === 'all' ? null : catOf(ui.cat);
+    $('listTitle').textContent = c ? c.name : 'Të gjitha produktet';
+    $('listSub').textContent = list.length === 1 ? '1 produkt' : list.length + ' produkte';
+    if (!list.length) {
+      var msg = ui.q ? 'Asnjë produkt nuk përputhet me "' + ui.q + '".' :
+        'Së shpejti produkte të reja këtu. Ndërkohë na shkruani çfarë kërkoni dhe e gjejmë për ju.';
+      grid.appendChild(el('div', { class: 'empty' }, [
+        el('b', { text: c ? c.name + ': ende pa produkte' : 'Ende pa produkte' }),
+        el('span', { text: msg }),
+        ui.q ? null : el('a', { class: 'btn btn-red', href: 'https://wa.me/' + PHONE + '?text=' + encodeURIComponent('Përshëndetje ERSO GROUP! Po kërkoj ' + (c ? c.name.toLowerCase() : 'një produkt') + '.'), target: '_blank', rel: 'noopener', text: 'Na shkruani në WhatsApp' })
+      ]));
+      return;
+    }
+    list.forEach(function (p) {
+      var ph = el('button', { class: 'ph', type: 'button', 'aria-label': 'Shiko ' + p.name, onclick: function () { openDetail(p.id); } }, [
+        p.photos.length ? img(p.photos[0], 640, p.name, true) : el('span', { class: 'noimg', text: catOf(p.cat).icon || '📦' }),
+        el('span', { class: 'pill st-' + (p.status || 'porosi'), text: STATUS[p.status] || STATUS.porosi }),
+        p.realPhotos ? el('span', { class: 'pill real', text: '✓ Foto reale' }) : null
+      ]);
+      grid.appendChild(el('article', { class: 'card' }, [ph, el('div', { class: 'bd' }, [
+        el('span', { class: 'cl', text: catOf(p.cat).name + (p.photos.length > 1 ? ' · ' + p.photos.length + ' foto' : '') }),
+        el('h3', { text: p.name }),
+        priceNode(p),
+        el('div', { class: 'ft' }, [
+          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', text: 'Detaje', onclick: function () { openDetail(p.id); } }),
+          el('a', { class: 'btn btn-red btn-sm', href: waLink(p), target: '_blank', rel: 'noopener', text: 'Jam i interesuar' })
+        ])
+      ])]));
+    });
+  }
+
+  function renderAll() { renderCats(); renderGrid(); }
+
+  function selectCat(id, push) {
+    ui.cat = id; renderAll();
+    if (push) document.getElementById('listTitle').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+
+  var lastFocus = null;
+  function openSheet() { lastFocus = document.activeElement; $('detail').hidden = false; document.body.style.overflow = 'hidden'; $('detail').querySelector('[data-close]').focus(); }
+  function closeSheet() { $('detail').hidden = true; document.body.style.overflow = ''; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  $('detail').addEventListener('click', function (e) { if (e.target === $('detail') || e.target.closest('[data-close]')) closeSheet(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('detail').hidden) closeSheet(); });
+
+  function openDetail(id) {
+    var p = state.products.find(function (x) { return x.id === id; }); if (!p) return;
+    $('dCat').textContent = (catOf(p.cat).icon || '') + ' ' + catOf(p.cat).name + ' · ' + (STATUS[p.status] || STATUS.porosi) + (p.realPhotos ? ' · ✓ Foto reale' : '');
+    $('dTitle').textContent = p.name;
+    var pr = $('dPrice'); pr.textContent = ''; pr.appendChild(priceNode(p, true));
+    $('dDesc').textContent = p.desc || ''; $('dDesc').hidden = !p.desc;
+    var sp = $('dSpecs'); sp.textContent = '';
+    p.specs.concat(p.delivery ? [['Afati i dorëzimit', p.delivery]] : []).forEach(function (s) {
+      sp.appendChild(el('li', null, [el('span', { text: s[0] }), el('span', { text: s[1] })]));
+    });
+    sp.hidden = !sp.children.length;
+    var main = $('dMain'), th = $('dThumbs'); main.textContent = ''; th.textContent = '';
+    function show(i) {
+      main.textContent = '';
+      main.appendChild(img(p.photos[i], 1400, p.name + ' – foto ' + (i + 1)));
+      Array.prototype.forEach.call(th.children, function (b, j) { b.setAttribute('aria-current', String(i === j)); });
+    }
+    if (p.photos.length) {
+      p.photos.forEach(function (ph, i) { th.appendChild(el('button', { type: 'button', 'aria-label': 'Foto ' + (i + 1), onclick: function () { show(i); } }, [img(ph, 160, '')])); });
+      show(0);
+    } else main.appendChild(el('span', { class: 'noimg', style: 'font-size:64px;opacity:.5', text: catOf(p.cat).icon || '📦' }));
+    th.hidden = p.photos.length < 2;
+    $('dWa').href = waLink(p);
+    openSheet();
+  }
+
+  $('q').addEventListener('input', function (e) { ui.q = e.target.value; renderGrid(); });
+
+  fetch('data/catalog.json', { cache: 'no-cache' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+    state = { categories: d.categories || [], products: d.products || [] };
+    var h = location.hash.slice(1);
+    if (h && state.categories.some(function (c) { return c.id === h; })) ui.cat = h;
+    renderAll();
+  }, function () {
+    $('grid').textContent = '';
+    $('grid').appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Katalogu nuk u ngarkua' }), el('span', { text: 'Rifreskoni faqen. Nëse vazhdon, na kontaktoni në +355 69 465 5011.' })]));
+  });
+  window.addEventListener('hashchange', function () {
+    var h = location.hash.slice(1);
+    if (state.categories.some(function (c) { return c.id === h; })) { selectCat(h, false); document.getElementById('katalogu').scrollIntoView(); }
+  });
+})();
+</script>
 </body>
 </html>
