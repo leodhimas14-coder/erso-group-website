@@ -1,0 +1,35 @@
+{
+ "categories": [
+  {
+   "id": "makina",
+   "name": "Makina",
+   "icon": "🚗"
+  },
+  {
+   "id": "motorra",
+   "name": "Motorra",
+   "icon": "🏍️"
+  },
+  {
+   "id": "makineta",
+   "name": "Makineta & Skuter",
+   "icon": "🛵"
+  },
+  {
+   "id": "kuzhine",
+   "name": "Pajisje Kuzhine",
+   "icon": "🍳"
+  },
+  {
+   "id": "kondicionere",
+   "name": "Kondicionerë",
+   "icon": "❄️"
+  },
+  {
+   "id": "mobileri",
+   "name": "Mobileri",
+   "icon": "🛋️"
+  }
+ ],
+ "products": []
+}

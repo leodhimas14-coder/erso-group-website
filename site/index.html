@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERSO GROUP SHPK — Sourcing &amp; Import Kinë–Shqipëri</title>
+<meta name="description" content="ERSO GROUP SHPK — gjejmë fabrikën, negociojmë çmimin, inspektojmë, blejmë, paketojmë, dërgojmë dhe zhdoganojmë. Shërbim i plotë sourcing nga Kina në Shqipëri.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="img/favicon.png">
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --bg-panel:#131317;
+    --bg-panel-2:#1a1b20;
+    --line:#2a2b31;
+    --silver:#c9ccd1;
+    --silver-bright:#f2f3f5;
+    --red:#c81f2f;
+    --red-dim:#7a121d;
+    --red-glow:rgba(200,31,47,0.35);
+    --text:#e7e8ea;
+    --text-muted:#93959c;
+    --radius:2px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Manrope', sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.eyebrow,.nav-logo-text,.btn,.step-num,.lang-btn{
+    font-family:'Oswald', sans-serif;
+    letter-spacing:0.02em;
+  }
+  h1,h2,h3{
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+  }
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+  /* background texture: dotted globe echo */
+  .dot-field{
+    position:absolute; inset:0;
+    background-image:radial-gradient(rgba(201,204,209,0.10) 1px, transparent 1px);
+    background-size:14px 14px;
+    mask-image:radial-gradient(ellipse 60% 55% at 50% 30%, black 0%, transparent 75%);
+    pointer-events:none;
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:rgba(10,10,12,0.85);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 24px;
+    max-width:1180px; margin:0 auto;
+    gap:16px;
+  }
+  .nav-logo{display:flex; align-items:center; gap:10px; order:1;}
+  .nav-logo img{height:38px; width:auto;}
+  .nav-logo-text{font-size:15px; font-weight:600; letter-spacing:0.08em;}
+  .nav-logo-text span{color:var(--red);}
+  .nav-links{display:flex; gap:30px; align-items:center; order:2;}
+  .nav-links a{
+    font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em;
+    color:var(--text-muted); font-weight:600; font-family:'Oswald',sans-serif;
+    transition:color .2s;
+    padding-bottom:2px; border-bottom:1px solid transparent;
+  }
+  .nav-links a:hover{color:var(--silver-bright); border-bottom-color:var(--red);}
+
+  /* Always-visible controls: language flags + mobile menu button, grouped
+     together on the right so the flags never hide inside a closed menu. */
+  .nav-right{display:flex; align-items:center; gap:12px; order:3;}
+  .lang-switch{display:flex; gap:2px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; flex-shrink:0;}
+  .lang-btn{
+    background:transparent; border:none; color:var(--text-muted);
+    padding:6px 8px; cursor:pointer;
+    transition:all .2s;
+    min-height:36px; min-width:36px; touch-action:manipulation;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .lang-btn .flag{font-size:16px; line-height:1; filter:grayscale(60%); opacity:0.65; transition:all .2s;}
+  .lang-btn:hover .flag{filter:grayscale(0%); opacity:1;}
+  .nav-mobile-toggle{
+    display:none; background:none; border:1px solid var(--line); border-radius:var(--radius);
+    color:var(--silver-bright); font-size:18px; cursor:pointer;
+    width:36px; height:36px; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+
+  @media (max-width:1100px){
+    .nav-links{
+      position:fixed; top:0; right:0; bottom:0; height:100vh;
+      width:min(84vw,320px); left:auto;
+      background:var(--bg-panel); border-left:1px solid var(--line);
+      flex-direction:column; align-items:stretch;
+      padding:88px 0 30px; gap:0; transform:translateX(100%);
+      transition:transform .3s ease; overflow-y:auto;
+      order:0; z-index:110; box-shadow:-14px 0 40px rgba(0,0,0,0.55);
+    }
+    .nav-links a{
+      display:flex; align-items:center; gap:14px;
+      width:100%; padding:16px 24px;
+      font-size:15px; letter-spacing:0.06em;
+      border-bottom:1px solid var(--line);
+      white-space:nowrap;
+    }
+    .nav-mobile-toggle{display:flex;}
+  }
+  .nav-backdrop{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    opacity:0; pointer-events:none; transition:opacity .3s ease;
+    z-index:105;
+  }
+  #nav-toggle:checked ~ * .nav-backdrop{ opacity:1; pointer-events:auto; }
+  @media (min-width:1101px){ .nav-backdrop{ display:none; } }
+
+  /* Active language pill: full color flag + red background */
+  #lang-sq:checked ~ * .lang-switch label[for="lang-sq"] .flag,
+  #lang-en:checked ~ * .lang-switch label[for="lang-en"] .flag,
+  #lang-it:checked ~ * .lang-switch label[for="lang-it"] .flag,
+  #lang-el:checked ~ * .lang-switch label[for="lang-el"] .flag,
+  #lang-sr:checked ~ * .lang-switch label[for="lang-sr"] .flag{
+    filter:grayscale(0%); opacity:1;
+  }
+
+
+  /* ===== Country picker (hero destination chip) ===== */
+  .c-al,.c-xk,.c-it,.c-gr,.c-de,.c-ch,.c-at,.c-fr,.c-gb,.c-be,.c-nl,.c-se,.c-rs,.c-mk,.c-me,.c-es,.cc-al,.cc-xk,.cc-it,.cc-gr,.cc-de,.cc-ch,.cc-at,.cc-fr,.cc-gb,.cc-be,.cc-nl,.cc-se,.cc-rs,.cc-mk,.cc-me,.cc-es{ display:none; }
+
+  #country-al:checked ~ * .c-al,
+  #country-al:checked ~ * .cc-al,
+  #country-xk:checked ~ * .c-xk,
+  #country-xk:checked ~ * .cc-xk,
+  #country-it:checked ~ * .c-it,
+  #country-it:checked ~ * .cc-it,
+  #country-gr:checked ~ * .c-gr,
+  #country-gr:checked ~ * .cc-gr,
+  #country-de:checked ~ * .c-de,
+  #country-de:checked ~ * .cc-de,
+  #country-ch:checked ~ * .c-ch,
+  #country-ch:checked ~ * .cc-ch,
+  #country-at:checked ~ * .c-at,
+  #country-at:checked ~ * .cc-at,
+  #country-fr:checked ~ * .c-fr,
+  #country-fr:checked ~ * .cc-fr,
+  #country-gb:checked ~ * .c-gb,
+  #country-gb:checked ~ * .cc-gb,
+  #country-be:checked ~ * .c-be,
+  #country-be:checked ~ * .cc-be,
+  #country-nl:checked ~ * .c-nl,
+  #country-nl:checked ~ * .cc-nl,
+  #country-se:checked ~ * .c-se,
+  #country-se:checked ~ * .cc-se,
+  #country-rs:checked ~ * .c-rs,
+  #country-rs:checked ~ * .cc-rs,
+  #country-mk:checked ~ * .c-mk,
+  #country-mk:checked ~ * .cc-mk,
+  #country-me:checked ~ * .c-me,
+  #country-me:checked ~ * .cc-me,
+  #country-es:checked ~ * .c-es,
+  #country-es:checked ~ * .cc-es{ display:contents; }
+
+  #country-al:checked ~ * .country-options label[for="country-al"],
+  #country-xk:checked ~ * .country-options label[for="country-xk"],
+  #country-it:checked ~ * .country-options label[for="country-it"],
+  #country-gr:checked ~ * .country-options label[for="country-gr"],
+  #country-de:checked ~ * .country-options label[for="country-de"],
+  #country-ch:checked ~ * .country-options label[for="country-ch"],
+  #country-at:checked ~ * .country-options label[for="country-at"],
+  #country-fr:checked ~ * .country-options label[for="country-fr"],
+  #country-gb:checked ~ * .country-options label[for="country-gb"],
+  #country-be:checked ~ * .country-options label[for="country-be"],
+  #country-nl:checked ~ * .country-options label[for="country-nl"],
+  #country-se:checked ~ * .country-options label[for="country-se"],
+  #country-rs:checked ~ * .country-options label[for="country-rs"],
+  #country-mk:checked ~ * .country-options label[for="country-mk"],
+  #country-me:checked ~ * .country-options label[for="country-me"],
+  #country-es:checked ~ * .country-options label[for="country-es"]{ background:var(--red); color:#fff; }
+
+  .hero-country-line{
+    display:flex; align-items:center; gap:8px;
+    margin-top:6px; margin-bottom:22px;
+  }
+  .hero-country-dot{ color:var(--silver-bright); font-size:22px; font-family:'Oswald',sans-serif; }
+  .country-dd{ position:relative; display:inline-block; }
+  .country-dd > summary{
+    cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:6px;
+    color:var(--silver); opacity:0.65; font-size:18px; font-weight:500;
+    font-family:'Oswald',sans-serif; letter-spacing:0.04em; text-transform:uppercase;
+    border-bottom:1px dashed rgba(255,255,255,0.3); padding:2px 2px 4px;
+    transition:opacity .2s, color .2s;
+  }
+  .country-dd > summary::-webkit-details-marker{ display:none; }
+  .country-dd > summary::marker{ content:''; }
+  .country-dd:hover > summary, .country-dd[open] > summary{ opacity:1; color:var(--silver-bright); }
+  .chip-caret{ font-size:13px; opacity:0.7; }
+  .country-options{
+    position:absolute; top:calc(100% + 10px); left:0; min-width:280px;
+    background:var(--bg-panel-2); border:1px solid var(--line); border-radius:4px;
+    padding:6px; display:grid; grid-template-columns:repeat(2,minmax(120px,1fr)); gap:2px;
+    z-index:80; box-shadow:0 16px 34px rgba(0,0,0,0.55);
+    max-height:300px; overflow-y:auto;
+    font-family:'Manrope',sans-serif; font-size:13px; font-weight:500;
+    text-transform:none; letter-spacing:0; line-height:1.3;
+  }
+  .country-options label{
+    padding:9px 12px; border-radius:3px; cursor:pointer; color:var(--text-muted);
+    white-space:nowrap; touch-action:manipulation; display:block;
+  }
+  .country-options label:hover{ background:rgba(255,255,255,0.07); color:var(--silver-bright); }
+  @media (max-width:520px){
+    .country-options{ grid-template-columns:1fr; min-width:220px; }
+  }
+
+  /* ===== HERO ===== */
+  .hero{
+    position:relative;
+    min-height:100vh;
+    display:flex; align-items:center;
+    padding:140px 0 80px;
+    background:
+      radial-gradient(ellipse 70% 60% at 50% 18%, rgba(200,31,47,0.14), transparent 60%),
+      linear-gradient(180deg, #0a0a0c 0%, #0a0a0c 100%);
+    overflow:hidden;
+  }
+  .hero-inner{
+    position:relative; z-index:2;
+    display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center;
+  }
+  @media (max-width:900px){ .hero-inner{grid-template-columns:1fr;} }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:11.5px; text-transform:uppercase; letter-spacing:0.22em;
+    color:var(--red); font-weight:600; margin-bottom:22px;
+  }
+  .eyebrow::before{content:''; width:26px; height:1px; background:var(--red);}
+  .hero h1{
+    font-size:clamp(34px, 5.2vw, 60px);
+    line-height:1.06;
+    color:var(--silver-bright);
+    margin-bottom:22px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    background:linear-gradient(180deg, #fff, var(--silver) 60%, #8d9096);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p.lead{
+    font-size:16.5px; color:var(--text-muted); max-width:520px; margin-bottom:34px;
+  }
+  .hero-ctas{display:flex; gap:14px; flex-wrap:wrap; position:relative; z-index:5;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:14px 26px; font-size:13px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.08em;
+    border-radius:var(--radius); cursor:pointer; border:1px solid transparent;
+    transition:all .2s; position:relative; z-index:1;
+  }
+  .btn-primary{background:var(--red); color:#fff;}
+  .btn-primary:hover{background:#e0273a; transform:translateY(-1px);}
+  .btn-ghost{border-color:var(--line); color:var(--silver-bright);}
+  .btn-ghost:hover{border-color:var(--silver); background:rgba(255,255,255,0.03);}
+
+  /* route signature element */
+  .route-card{
+    position:relative;
+    background:linear-gradient(155deg, var(--bg-panel), var(--bg-panel-2));
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:34px 26px 28px;
+  }
+  .route-title{font-size:11px; text-transform:uppercase; letter-spacing:0.18em; color:var(--text-muted); margin-bottom:6px; text-align:center;}
+  .route-hint{font-size:11.5px; color:var(--silver); opacity:0.75; text-align:center; margin-bottom:22px;}
+  .route-svg-wrap{position:relative; height:110px;}
+  .route-pin{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    position:absolute; top:28px;
+  }
+  .route-pin.origin{left:0;}
+  .route-pin.dest{right:0;}
+  .route-dot{width:11px; height:11px; border-radius:50%; background:var(--red); box-shadow:0 0 0 4px var(--red-glow);}
+  .route-pin.dest .route-dot{background:var(--silver-bright); box-shadow:0 0 0 4px rgba(242,243,245,0.18);}
+  .route-code{font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; letter-spacing:0.08em; color:var(--silver-bright);}
+  .route-label{font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;}
+  .route-line{position:absolute; top:33px; left:26px; right:26px; height:1px;}
+  .route-line svg{width:100%; height:2px; overflow:visible;}
+  .route-line path{
+    stroke:var(--line); stroke-width:1.5; fill:none;
+  }
+  .route-line .dash{
+    stroke:var(--red); stroke-width:1.5; fill:none;
+    stroke-dasharray:6 8;
+    animation:dash-move 1.6s linear infinite;
+  }
+  @keyframes dash-move{ to{ stroke-dashoffset:-28; } }
+  .route-plane{
+    position:absolute; top:-6px; font-size:14px;
+    animation:plane-move 3.4s ease-in-out infinite;
+  }
+  @keyframes plane-move{
+    0%{ left:2%; opacity:0; }
+    8%{ opacity:1; }
+    92%{ opacity:1; }
+    100%{ left:92%; opacity:0; }
+  }
+  .route-stats{display:flex; justify-content:space-between; margin-top:30px; border-top:1px solid var(--line); padding-top:20px;}
+  .route-stat b{display:block; font-family:'Oswald',sans-serif; font-size:20px; color:var(--silver-bright); font-weight:600;}
+  .route-stat span{font-size:10.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;}
+
+  /* ===== SECTION shared ===== */
+  section{position:relative; padding:96px 0; scroll-margin-top:80px;}
+  .section-head{max-width:640px; margin-bottom:56px;}
+  .section-head h2{font-size:clamp(26px,3.4vw,38px); color:var(--silver-bright); margin-bottom:14px;}
+  .section-head p{color:var(--text-muted); font-size:15.5px;}
+  .divider{height:1px; background:var(--line); border:none;}
+
+  /* ===== SERVICES ===== */
+  /* ===== ABOUT ===== */
+  .about-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:start;}
+  @media (max-width:880px){ .about-grid{grid-template-columns:1fr;} }
+  .about-text h2{font-size:clamp(24px,3vw,32px); color:var(--silver-bright); margin:14px 0 18px;}
+  .about-text p{font-size:15px; color:var(--text-muted); max-width:560px;}
+  .about-badges{display:flex; flex-direction:column; gap:14px;}
+  .about-badge{
+    display:flex; align-items:center; gap:14px;
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:3px;
+    padding:16px 18px; font-size:14px; color:var(--silver-bright); font-weight:500;
+  }
+  .about-badge-ico{font-size:22px; flex-shrink:0;}
+
+  .services-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line);
+  }
+  @media (max-width:880px){ .services-grid{grid-template-columns:1fr;} }
+  .service-card{
+    background:var(--bg-panel); padding:32px 28px;
+    transition:background .2s;
+  }
+  a.service-card{display:block;}
+  a.service-card p{color:var(--red); font-weight:600;}
+  .service-card:hover{background:var(--bg-panel-2);}
+  .service-num{font-family:'Oswald',sans-serif; font-size:12px; color:var(--red); letter-spacing:0.1em; margin-bottom:16px;}
+  .service-card h3{font-size:17px; color:var(--silver-bright); margin-bottom:10px; text-transform:none; letter-spacing:0;}
+  .service-card p{font-size:14px; color:var(--text-muted);}
+
+  /* ===== PROCESS TIMELINE ===== */
+  .process{background:var(--bg-panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .timeline{position:relative; display:flex; flex-direction:column; gap:0;}
+  .step{
+    display:grid; grid-template-columns:90px 1fr; gap:24px;
+    padding:26px 0; border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .step:last-child{border-bottom:none;}
+  .step-num{
+    font-size:34px; font-weight:600; color:transparent;
+    -webkit-text-stroke:1px var(--silver);
+    line-height:1;
+  }
+  .step-body h3{font-size:16px; color:var(--silver-bright); text-transform:none; letter-spacing:0; margin-bottom:8px;}
+  .step-body p{font-size:14.5px; color:var(--text-muted); max-width:640px;}
+  @media (max-width:600px){ .step{grid-template-columns:50px 1fr;} .step-num{font-size:24px;} }
+
+  /* ===== GALLERY ===== */
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
+  }
+  @media (max-width:880px){ .gallery-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:520px){ .gallery-grid{grid-template-columns:1fr;} }
+  .gallery-item{
+    position:relative; overflow:hidden; border-radius:2px;
+    border:1px solid var(--line);
+    aspect-ratio:4/5;
+  }
+  .gallery-item img{
+    width:100%; height:100%; object-fit:cover;
+    transition:transform .5s ease, filter .4s ease;
+    filter:grayscale(15%) contrast(1.05);
+  }
+  .gallery-item:hover img{transform:scale(1.06); filter:grayscale(0%) contrast(1.05);}
+  .gallery-cap{
+    position:absolute; left:0; right:0; bottom:0;
+    padding:14px 16px 12px;
+    background:linear-gradient(0deg, rgba(0,0,0,0.85), transparent);
+    font-size:12px; letter-spacing:0.04em; color:var(--silver-bright);
+  }
+
+  /* ===== WHY / STATS STRIP ===== */
+  .stats-strip{
+    display:grid; grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  @media (max-width:700px){ .stats-strip{grid-template-columns:repeat(2,1fr);} }
+  .stat-box{padding:34px 26px; border-right:1px solid var(--line);}
+  .stat-box:last-child{border-right:none;}
+  .stat-box b{display:block; font-family:'Oswald',sans-serif; font-size:30px; color:var(--red); font-weight:600; margin-bottom:6px;}
+  .stat-box span{font-size:12.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em;}
+
+  /* ===== CONTACT ===== */
+  .contact{
+    background:radial-gradient(ellipse 60% 70% at 50% 0%, rgba(200,31,47,0.10), transparent 60%);
+  }
+  .contact-box{
+    display:grid; grid-template-columns:1fr 1fr; gap:0;
+    border:1px solid var(--line); background:var(--bg-panel);
+  }
+  @media (max-width:800px){ .contact-box{grid-template-columns:1fr;} }
+  .contact-left{padding:46px 40px;}
+  .contact-left h2{font-size:26px; color:var(--silver-bright); margin-bottom:16px;}
+  .contact-left p{color:var(--text-muted); font-size:15px; margin-bottom:28px; max-width:420px;}
+  .contact-line{
+    display:flex; align-items:center; gap:14px; padding:14px 0; border-top:1px solid var(--line);
+  }
+  .contact-line:first-of-type{border-top:none;}
+  .contact-ico{
+    width:34px; height:34px; border:1px solid var(--line); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--red); flex-shrink:0;
+  }
+  .contact-line a, .contact-line span.val{font-size:15px; color:var(--silver-bright); font-weight:600;}
+  .contact-right{
+    padding:46px 40px;
+    background:var(--bg-panel-2);
+    display:flex; flex-direction:column; justify-content:center; gap:16px;
+  }
+  .contact-right .tag{font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--red); font-weight:600; margin-bottom:6px;}
+  .contact-right ul{list-style:none; display:flex; flex-direction:column; gap:10px;}
+  .contact-right li{font-size:14px; color:var(--text-muted); padding-left:18px; position:relative;}
+  .contact-right li::before{content:'—'; position:absolute; left:0; color:var(--red);}
+
+  footer{
+    padding:30px 0; border-top:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  footer .foot-logo{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-muted); letter-spacing:0.05em;}
+  footer .foot-logo img{height:20px;}
+  footer small{color:var(--text-muted); font-size:12px;}
+
+  /* ===== CSS-only language switching & mobile menu ===== */
+  /* Visually-hidden but still label-toggleable inputs */
+  .vh-input{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  /* Hide every language span by default; a translated site should never
+     show all five languages stacked on top of each other. */
+  .t-sq,.t-en,.t-it,.t-el,.t-sr{ display:none; }
+
+  /* Show only the language whose radio is checked. The radios live as
+     direct children of <body>, so "~ *" reaches every top-level section
+     (header, hero, services, etc.) and the descendant selector then finds
+     the matching span at any depth inside it — no JavaScript involved. */
+  #lang-sq:checked ~ * .t-sq,
+  #lang-en:checked ~ * .t-en,
+  #lang-it:checked ~ * .t-it,
+  #lang-el:checked ~ * .t-el,
+  #lang-sr:checked ~ * .t-sr{ display:contents; }
+
+  /* Highlight the active language pill */
+  .lang-switch label.lang-btn{ display:inline-flex; align-items:center; justify-content:center; }
+  #lang-sq:checked ~ * .lang-switch label[for="lang-sq"],
+  #lang-en:checked ~ * .lang-switch label[for="lang-en"],
+  #lang-it:checked ~ * .lang-switch label[for="lang-it"],
+  #lang-el:checked ~ * .lang-switch label[for="lang-el"],
+  #lang-sr:checked ~ * .lang-switch label[for="lang-sr"]{
+    background:var(--red); color:#fff;
+  }
+
+  /* Mobile menu open/close via the hidden checkbox */
+  #nav-toggle:checked ~ header .nav-links{ transform:translateX(0); }
+
+  /* Content is visible immediately; a light CSS-only entrance animation
+     plays on load without requiring scroll-triggered JavaScript. */
+  [data-i18n]{display:block;}
+  .reveal{ animation:pageFadeIn .7s ease both; }
+  @keyframes pageFadeIn{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+
+<!-- Hidden state controls: pure HTML/CSS language switch + mobile menu.
+     No JavaScript is required for these to work, since some in-app / mobile
+     preview environments do not execute <script> tags at all. -->
+<input type="checkbox" id="nav-toggle" class="vh-input">
+<input type="radio" name="lang" id="lang-sq" class="vh-input" checked>
+<input type="radio" name="lang" id="lang-en" class="vh-input">
+<input type="radio" name="lang" id="lang-it" class="vh-input">
+<input type="radio" name="lang" id="lang-el" class="vh-input">
+<input type="radio" name="lang" id="lang-sr" class="vh-input">
+
+<!-- Country picker for the hero destination chip / route card. Independent
+     from the language switch above: this only drives which country name
+     and code are shown, not the page language. -->
+<input type="radio" name="country" id="country-al" class="vh-input" checked>
+<input type="radio" name="country" id="country-xk" class="vh-input">
+<input type="radio" name="country" id="country-it" class="vh-input">
+<input type="radio" name="country" id="country-gr" class="vh-input">
+<input type="radio" name="country" id="country-de" class="vh-input">
+<input type="radio" name="country" id="country-ch" class="vh-input">
+<input type="radio" name="country" id="country-at" class="vh-input">
+<input type="radio" name="country" id="country-fr" class="vh-input">
+<input type="radio" name="country" id="country-gb" class="vh-input">
+<input type="radio" name="country" id="country-be" class="vh-input">
+<input type="radio" name="country" id="country-nl" class="vh-input">
+<input type="radio" name="country" id="country-se" class="vh-input">
+<input type="radio" name="country" id="country-rs" class="vh-input">
+<input type="radio" name="country" id="country-mk" class="vh-input">
+<input type="radio" name="country" id="country-me" class="vh-input">
+<input type="radio" name="country" id="country-es" class="vh-input">
+
+<header>
+  <div class="nav">
+    <div class="nav-logo">
+      <img src="img/logo.png" alt="ERSO GROUP SHPK">
+      <span class="nav-logo-text">ERSO <span>GROUP</span> SHPK</span>
+    </div>
+    <div class="nav-right">
+      <div class="lang-switch">
+        <label class="lang-btn" for="lang-sq" aria-label="Shqip"><span class="flag">🇦🇱</span></label>
+        <label class="lang-btn" for="lang-en" aria-label="English"><span class="flag">🇬🇧</span></label>
+        <label class="lang-btn" for="lang-it" aria-label="Italiano"><span class="flag">🇮🇹</span></label>
+        <label class="lang-btn" for="lang-el" aria-label="Ελληνικά"><span class="flag">🇬🇷</span></label>
+        <label class="lang-btn" for="lang-sr" aria-label="Srpski"><span class="flag">🇷🇸</span></label>
+      </div>
+      <label for="nav-toggle" class="nav-mobile-toggle" aria-label="Menu">☰</label>
+    </div>
+    <label for="nav-toggle" class="nav-backdrop" aria-hidden="true"></label>
+    <nav class="nav-links" id="navLinks">
+      <a href="#rreth-nesh" data-i18n="nav.about"><span class="t-sq">Rreth Nesh</span><span class="t-en">About</span><span class="t-it">Chi Siamo</span><span class="t-el">Σχετικά</span><span class="t-sr">O Nama</span></a>
+      <a href="#sherbimet" data-i18n="nav.services"><span class="t-sq">Shërbimet</span><span class="t-en">Services</span><span class="t-it">Servizi</span><span class="t-el">Υπηρεσίες</span><span class="t-sr">Usluge</span></a>
+      <a href="katalog/" data-i18n="nav.catalog"><span class="t-sq">Katalogu</span><span class="t-en">Catalog</span><span class="t-it">Catalogo</span><span class="t-el">Κατάλογος</span><span class="t-sr">Katalog</span></a>
+      <a href="#klientet" data-i18n="nav.clients"><span class="t-sq">Klientët</span><span class="t-en">Clients</span><span class="t-it">Clienti</span><span class="t-el">Πελάτες</span><span class="t-sr">Klijenti</span></a>
+      <a href="#procesi" data-i18n="nav.process"><span class="t-sq">Procesi</span><span class="t-en">Process</span><span class="t-it">Processo</span><span class="t-el">Διαδικασία</span><span class="t-sr">Proces</span></a>
+      <a href="#galeria" data-i18n="nav.gallery"><span class="t-sq">Galeria</span><span class="t-en">Gallery</span><span class="t-it">Galleria</span><span class="t-el">Γκαλερί</span><span class="t-sr">Galerija</span></a>
+      <a href="#kontakt" data-i18n="nav.contact"><span class="t-sq">Kontakt</span><span class="t-en">Contact</span><span class="t-it">Contatti</span><span class="t-el">Επικοινωνία</span><span class="t-sr">Kontakt</span></a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="dot-field"></div>
+  <div class="wrap hero-inner">
+    <div>
+      <div class="eyebrow" data-i18n="hero.eyebrow"><span class="t-sq">Sourcing & Import — Kinë · Evropë</span><span class="t-en">Sourcing & Import — China · Europe</span><span class="t-it">Sourcing & Import — Cina · Europa</span><span class="t-el">Sourcing & Εισαγωγές — Κίνα · Ευρώπη</span><span class="t-sr">Sorsing & Uvoz — Kina · Evropa</span></div>
+      <h1 data-i18n="hero.title"><span class="t-sq">Nga fabrika në Kinë<br><em>deri te dera juaj</em> —</span><span class="t-en">From the factory in China<br><em>to your door</em> —</span><span class="t-it">Dalla fabbrica in Cina<br><em>fino alla tua porta</em> —</span><span class="t-el">Από το εργοστάσιο στην Κίνα<br><em>μέχρι την πόρτα σας</em> —</span><span class="t-sr">Iz fabrike u Kini<br><em>do vaših vrata</em> —</span></h1>
+      <div class="hero-country-line">
+        <details class="country-dd"><summary class="country-chip"><span class="chip-value"><span class="c-al">Shqipëri</span><span class="c-xk">Kosovë</span><span class="c-it">Itali</span><span class="c-gr">Greqi</span><span class="c-de">Gjermani</span><span class="c-ch">Zvicër</span><span class="c-at">Austri</span><span class="c-fr">Francë</span><span class="c-gb">UK</span><span class="c-be">Belgjikë</span><span class="c-nl">Holandë</span><span class="c-se">Suedi</span><span class="c-rs">Serbi</span><span class="c-mk">Maqedoni e Veriut</span><span class="c-me">Mal i Zi</span><span class="c-es">Spanjë</span></span><span class="chip-caret">▾</span></summary><div class="country-options"><label for="country-al">Shqipëri</label><label for="country-xk">Kosovë</label><label for="country-it">Itali</label><label for="country-gr">Greqi</label><label for="country-de">Gjermani</label><label for="country-ch">Zvicër</label><label for="country-at">Austri</label><label for="country-fr">Francë</label><label for="country-gb">UK</label><label for="country-be">Belgjikë</label><label for="country-nl">Holandë</label><label for="country-se">Suedi</label><label for="country-rs">Serbi</label><label for="country-mk">Maqedoni e Veriut</label><label for="country-me">Mal i Zi</label><label for="country-es">Spanjë</label></div></details><span class="hero-country-dot">.</span>
+      </div>
+      <p class="lead" data-i18n="hero.lead"><span class="t-sq">I gjejmë fabrikën e duhur, negociojmë çmimin, inspektojmë cilësinë dhe kujdesemi për çdo hap — paketim, transport dhe zhdoganim — deri sa produkti të jetë në duart tuaja.</span><span class="t-en">We find the right factory, negotiate the price, inspect quality, and handle every step — packing, shipping and customs clearance — until your product is in your hands.</span><span class="t-it">Troviamo la fabbrica giusta, negoziamo il prezzo, ispezioniamo la qualità e gestiamo ogni fase — imballaggio, spedizione e sdoganamento — finché il prodotto non è nelle tue mani.</span><span class="t-el">Βρίσκουμε το κατάλληλο εργοστάσιο, διαπραγματευόμαστε την τιμή, ελέγχουμε την ποιότητα και αναλαμβάνουμε κάθε βήμα — συσκευασία, μεταφορά και εκτελωνισμό — μέχρι το προϊόν να φτάσει στα χέρια σας.</span><span class="t-sr">Pronalazimo pravu fabriku, pregovaramo cenu, proveravamo kvalitet i brinemo o svakom koraku — pakovanju, transportu i carinjenju — dok proizvod ne stigne u vaše ruke.</span></p>
+      <div class="hero-ctas">
+        <a href="tel:+355694655011" class="btn btn-primary" data-i18n="hero.cta1"><span class="t-sq">Kërko Ofertë</span><span class="t-en">Request a Quote</span><span class="t-it">Richiedi Preventivo</span><span class="t-el">Ζητήστε Προσφορά</span><span class="t-sr">Zatraži Ponudu</span></a>
+        <a href="#procesi" class="btn btn-ghost" data-i18n="hero.cta2"><span class="t-sq">Si Punojmë</span><span class="t-en">How We Work</span><span class="t-it">Come Lavoriamo</span><span class="t-el">Πώς Δουλεύουμε</span><span class="t-sr">Kako Radimo</span></a>
+      </div>
+    </div>
+    <div class="route-card">
+      <div class="route-title" data-i18n="hero.routeTitle"><span class="t-sq">Rruga Standarde e Ngarkesës</span><span class="t-en">Standard Shipment Route</span><span class="t-it">Percorso Standard della Spedizione</span><span class="t-el">Τυπική Διαδρομή Αποστολής</span><span class="t-sr">Standardna Ruta Pošiljke</span></div>
+      <div class="route-hint" data-i18n="hero.routeHint"><span class="t-sq">Ndryshon sipas vendit që zgjidhni në titull</span><span class="t-en">Updates based on the country you pick above</span><span class="t-it">Cambia in base al paese scelto sopra</span><span class="t-el">Αλλάζει ανάλογα με τη χώρα που επιλέγετε παραπάνω</span><span class="t-sr">Menja se prema zemlji koju izaberete gore</span></div>
+      <div class="route-svg-wrap">
+        <div class="route-pin origin">
+          <div class="route-dot"></div>
+          <div class="route-code">CN</div>
+          <div class="route-label" data-i18n="hero.origin"><span class="t-sq">Fabrika</span><span class="t-en">Factory</span><span class="t-it">Fabbrica</span><span class="t-el">Εργοστάσιο</span><span class="t-sr">Fabrika</span></div>
+        </div>
+        <div class="route-pin dest">
+          <div class="route-dot"></div>
+          <div class="route-code"><span class="cc-al">AL</span><span class="cc-xk">XK</span><span class="cc-it">IT</span><span class="cc-gr">GR</span><span class="cc-de">DE</span><span class="cc-ch">CH</span><span class="cc-at">AT</span><span class="cc-fr">FR</span><span class="cc-gb">GB</span><span class="cc-be">BE</span><span class="cc-nl">NL</span><span class="cc-se">SE</span><span class="cc-rs">RS</span><span class="cc-mk">MK</span><span class="cc-me">ME</span><span class="cc-es">ES</span></div>
+          <div class="route-label"><span class="c-al">Shqipëri</span><span class="c-xk">Kosovë</span><span class="c-it">Itali</span><span class="c-gr">Greqi</span><span class="c-de">Gjermani</span><span class="c-ch">Zvicër</span><span class="c-at">Austri</span><span class="c-fr">Francë</span><span class="c-gb">UK</span><span class="c-be">Belgjikë</span><span class="c-nl">Holandë</span><span class="c-se">Suedi</span><span class="c-rs">Serbi</span><span class="c-mk">Maqedoni e Veriut</span><span class="c-me">Mal i Zi</span><span class="c-es">Spanjë</span></div>
+        </div>
+        <div class="route-line">
+          <svg viewBox="0 0 100 2" preserveAspectRatio="none">
+            <path class="base" d="M0,1 L100,1"></path>
+            <path class="dash" d="M0,1 L100,1"></path>
+          </svg>
+          <div class="route-plane">📦</div>
+        </div>
+      </div>
+      <div class="route-stats">
+        <div class="route-stat"><b>100%</b><span data-i18n="hero.stat1"><span class="t-sq">I Verifikuar</span><span class="t-en">Verified</span><span class="t-it">Verificato</span><span class="t-el">Επαληθευμένο</span><span class="t-sr">Proverено</span></span></div>
+        <div class="route-stat"><b>A–Z</b><span data-i18n="hero.stat2"><span class="t-sq">Shërbim i Plotë</span><span class="t-en">Full Service</span><span class="t-it">Servizio Completo</span><span class="t-el">Πλήρης Υπηρεσία</span><span class="t-sr">Kompletna Usluga</span></span></div>
+        <div class="route-stat"><b>0</b><span data-i18n="hero.stat3"><span class="t-sq">Telashe Doganore</span><span class="t-en">Customs Hassle</span><span class="t-it">Problemi Doganali</span><span class="t-el">Τελωνειακή Ταλαιπωρία</span><span class="t-sr">Carinski Problemi</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="rreth-nesh">
+  <div class="wrap">
+    <div class="about-grid reveal">
+      <div class="about-text">
+        <div class="eyebrow"><span class="t-sq">Kush Jemi</span><span class="t-en">Who We Are</span><span class="t-it">Chi Siamo</span><span class="t-el">Ποιοι Είμαστε</span><span class="t-sr">Ko Smo Mi</span></div>
+        <h2><span class="t-sq">Nga Durrësi, për gjithë Evropën</span><span class="t-en">From Durrës, for all of Europe</span><span class="t-it">Da Durazzo, per tutta l'Europa</span><span class="t-el">Από το Δυρράχιο, για όλη την Ευρώπη</span><span class="t-sr">Iz Drača, za celu Evropu</span></h2>
+        <p><span class="t-sq">ERSO GROUP SHPK është një kompani shqiptare e specializuar në sourcing dhe import nga Kina. Punojmë drejtpërdrejt me fabrikat, pa ndërmjetës të panevojshëm, dhe kujdesemi për çdo hap — nga gjetja e produktit deri te dorëzimi te dera juaj. Me bazë në Durrës, sot shërbejmë klientë në të gjithë Evropën.</span><span class="t-en">ERSO GROUP SHPK is an Albanian company specialized in sourcing and import from China. We work directly with factories, without unnecessary middlemen, and handle every step — from finding the product to delivering it to your door. Based in Durrës, we now serve clients across Europe.</span><span class="t-it">ERSO GROUP SHPK è un'azienda albanese specializzata in sourcing e importazione dalla Cina. Lavoriamo direttamente con le fabbriche, senza intermediari inutili, e gestiamo ogni fase — dalla ricerca del prodotto alla consegna alla tua porta. Con sede a Durazzo, oggi serviamo clienti in tutta Europa.</span><span class="t-el">Η ERSO GROUP SHPK είναι μια αλβανική εταιρεία εξειδικευμένη στο sourcing και τις εισαγωγές από την Κίνα. Συνεργαζόμαστε απευθείας με τα εργοστάσια, χωρίς περιττούς μεσάζοντες, και αναλαμβάνουμε κάθε βήμα — από την εύρεση του προϊόντος έως την παράδοση στην πόρτα σας. Με έδρα το Δυρράχιο, σήμερα εξυπηρετούμε πελάτες σε όλη την Ευρώπη.</span><span class="t-sr">ERSO GROUP SHPK je albanska kompanija specijalizovana za sorsing i uvoz iz Kine. Radimo direktno sa fabrikama, bez nepotrebnih posrednika, i brinemo o svakom koraku — od pronalaženja proizvoda do isporuke na vaša vrata. Sa sedištem u Draču, danas uslužujemo klijente širom Evrope.</span></p>
+      </div>
+      <div class="about-badges">
+        <div class="about-badge">
+          <div class="about-badge-ico">🏭</div>
+          <div><span class="t-sq">Kontakt direkt me fabrikat</span><span class="t-en">Direct factory contact</span><span class="t-it">Contatto diretto con le fabbriche</span><span class="t-el">Άμεση επαφή με εργοστάσια</span><span class="t-sr">Direktan kontakt sa fabrikama</span></div>
+        </div>
+        <div class="about-badge">
+          <div class="about-badge-ico">🔍</div>
+          <div><span class="t-sq">Inspektim fizik i cilësisë</span><span class="t-en">Physical quality inspection</span><span class="t-it">Ispezione fisica della qualità</span><span class="t-el">Φυσικός έλεγχος ποιότητας</span><span class="t-sr">Fizička kontrola kvaliteta</span></div>
+        </div>
+        <div class="about-badge">
+          <div class="about-badge-ico">📦</div>
+          <div><span class="t-sq">Menaxhim i plotë deri te dera</span><span class="t-en">Full management to your door</span><span class="t-it">Gestione completa fino alla porta</span><span class="t-el">Πλήρης διαχείριση έως την πόρτα</span><span class="t-sr">Potpuno upravljanje do vrata</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sherbimet">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" data-i18n="services.eyebrow"><span class="t-sq">Shërbimet</span><span class="t-en">Services</span><span class="t-it">Servizi</span><span class="t-el">Υπηρεσίες</span><span class="t-sr">Usluge</span></div>
+      <h2 data-i18n="services.title"><span class="t-sq">Gjithçka nën një çati</span><span class="t-en">Everything under one roof</span><span class="t-it">Tutto sotto lo stesso tetto</span><span class="t-el">Όλα κάτω από μία στέγη</span><span class="t-sr">Sve na jednom mestu</span></h2>
+      <p data-i18n="services.lead"><span class="t-sq">Nuk shesim vetëm produkte — menaxhojmë të gjithë zinxhirin, që ju të merreni vetëm me biznesin tuaj.</span><span class="t-en">We don't just sell products — we manage the entire chain, so you only deal with your business.</span><span class="t-it">Non vendiamo solo prodotti — gestiamo l'intera catena, così tu pensi solo al tuo business.</span><span class="t-el">Δεν πουλάμε απλώς προϊόντα — διαχειριζόμαστε ολόκληρη την αλυσίδα, ώστε εσείς να ασχολείστε μόνο με την επιχείρησή σας.</span><span class="t-sr">Ne prodajemo samo proizvode — upravljamo celim lancem, tako da se vi bavite samo svojim poslom.</span></p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="service-num">01</div>
+        <h3 data-i18n="services.s1t"><span class="t-sq">Gjetja e Fabrikës</span><span class="t-en">Factory Sourcing</span><span class="t-it">Ricerca Fabbrica</span><span class="t-el">Εύρεση Εργοστασίου</span><span class="t-sr">Pronalaženje Fabrike</span></h3>
+        <p data-i18n="services.s1p"><span class="t-sq">Kërkojmë dhe verifikojmë prodhuesin e duhur për produktin që kërkoni, sipas specifikave tuaja.</span><span class="t-en">We search and verify the right manufacturer for your product, based on your specs.</span><span class="t-it">Cerchiamo e verifichiamo il produttore giusto per il tuo prodotto, secondo le tue specifiche.</span><span class="t-el">Αναζητούμε και επαληθεύουμε τον κατάλληλο κατασκευαστή για το προϊόν σας, σύμφωνα με τις προδιαγραφές σας.</span><span class="t-sr">Tražimo i proveravamo pravog proizvođača za vaš proizvod, prema vašim specifikacijama.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">02</div>
+        <h3 data-i18n="services.s2t"><span class="t-sq">Modele & Çmime</span><span class="t-en">Samples & Pricing</span><span class="t-it">Campioni & Prezzi</span><span class="t-el">Δείγματα & Τιμές</span><span class="t-sr">Uzorci i Cene</span></h3>
+        <p data-i18n="services.s2p"><span class="t-sq">Ju sjellim mostra, foto reale dhe oferta konkrete çmimi para se të merrni vendim.</span><span class="t-en">We bring you samples, real photos and concrete price offers before you decide.</span><span class="t-it">Ti portiamo campioni, foto reali e offerte di prezzo concrete prima della tua decisione.</span><span class="t-el">Σας φέρνουμε δείγματα, πραγματικές φωτογραφίες και συγκεκριμένες προσφορές τιμών πριν αποφασίσετε.</span><span class="t-sr">Donosimo vam uzorke, prave fotografije i konkretne ponude cena pre nego što odlučite.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">03</div>
+        <h3 data-i18n="services.s3t"><span class="t-sq">Inspektim Cilësie</span><span class="t-en">Quality Inspection</span><span class="t-it">Ispezione Qualità</span><span class="t-el">Έλεγχος Ποιότητας</span><span class="t-sr">Kontrola Kvaliteta</span></h3>
+        <p data-i18n="services.s3p"><span class="t-sq">Kontrollojmë personalisht mallin në fabrikë përpara ngarkimit, për të evituar surpriza.</span><span class="t-en">We personally check the goods at the factory before shipment, to avoid surprises.</span><span class="t-it">Controlliamo personalmente la merce in fabbrica prima della spedizione, per evitare sorprese.</span><span class="t-el">Ελέγχουμε προσωπικά το εμπόρευμα στο εργοστάσιο πριν την αποστολή, για να αποφύγουμε εκπλήξεις.</span><span class="t-sr">Lično proveravamo robu u fabrici pre otpreme, kako bismo izbegli iznenađenja.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">04</div>
+        <h3 data-i18n="services.s4t"><span class="t-sq">Blerje & Negocim</span><span class="t-en">Purchasing & Negotiation</span><span class="t-it">Acquisto & Negoziazione</span><span class="t-el">Αγορά & Διαπραγμάτευση</span><span class="t-sr">Kupovina i Pregovaranje</span></h3>
+        <p data-i18n="services.s4p"><span class="t-sq">Negociojmë çmimin dhe kushtet më të mira, duke mbrojtur interesin tuaj si klient.</span><span class="t-en">We negotiate the best price and terms, protecting your interests as the client.</span><span class="t-it">Negoziamo il miglior prezzo e le migliori condizioni, tutelando il tuo interesse come cliente.</span><span class="t-el">Διαπραγματευόμαστε την καλύτερη τιμή και τους όρους, προστατεύοντας το συμφέρον σας ως πελάτη.</span><span class="t-sr">Pregovaramo najbolju cenu i uslove, štiteći vaš interes kao klijenta.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">05</div>
+        <h3 data-i18n="services.s5t"><span class="t-sq">Dokumentacion & Letra</span><span class="t-en">Documentation & Paperwork</span><span class="t-it">Documentazione</span><span class="t-el">Έγγραφα & Χαρτιά</span><span class="t-sr">Dokumentacija</span></h3>
+        <p data-i18n="services.s5p"><span class="t-sq">Përgatisim faturat, kontratat dhe të gjithë dokumentacionin e nevojshëm doganor.</span><span class="t-en">We prepare invoices, contracts and all required customs documentation.</span><span class="t-it">Prepariamo fatture, contratti e tutta la documentazione doganale necessaria.</span><span class="t-el">Ετοιμάζουμε τιμολόγια, συμβόλαια και όλα τα απαραίτητα τελωνειακά έγγραφα.</span><span class="t-sr">Pripremamo fakture, ugovore i svu potrebnu carinsku dokumentaciju.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">06</div>
+        <h3 data-i18n="services.s6t"><span class="t-sq">Transport & Zhdoganim</span><span class="t-en">Shipping & Customs Clearance</span><span class="t-it">Spedizione & Sdoganamento</span><span class="t-el">Μεταφορά & Εκτελωνισμός</span><span class="t-sr">Transport i Carinjenje</span></h3>
+        <p data-i18n="services.s6p"><span class="t-sq">Organizojmë paketimin, ngarkimin, transportin ndërkombëtar dhe zhdoganimin kudo në Evropë.</span><span class="t-en">We arrange packing, loading, international transport and customs clearance anywhere in Europe.</span><span class="t-it">Organizziamo imballaggio, carico, trasporto internazionale e sdoganamento in tutta Europa.</span><span class="t-el">Οργανώνουμε τη συσκευασία, τη φόρτωση, τη διεθνή μεταφορά και τον εκτελωνισμό σε όλη την Ευρώπη.</span><span class="t-sr">Organizujemo pakovanje, utovar, međunarodni transport i carinjenje bilo gde u Evropi.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="klientet">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="t-sq">Klientët</span><span class="t-en">Clients</span><span class="t-it">Clienti</span><span class="t-el">Πελάτες</span><span class="t-sr">Klijenti</span></div>
+      <h2><span class="t-sq">Kujt i shërbejmë</span><span class="t-en">Who We Serve</span><span class="t-it">Chi Serviamo</span><span class="t-el">Ποιους Εξυπηρετούμε</span><span class="t-sr">Kome Služimo</span></h2>
+      <p><span class="t-sq">Nga bizneset e vogla familjare deri te zinxhirët në zgjerim — sourcing për lloje të ndryshme biznesesh.</span><span class="t-en">From small family businesses to expanding chains — sourcing for all kinds of businesses.</span><span class="t-it">Dalle piccole imprese familiari alle catene in espansione — sourcing per ogni tipo di attività.</span><span class="t-el">Από μικρές οικογενειακές επιχειρήσεις έως αλυσίδες που επεκτείνονται — sourcing για κάθε είδους επιχείρηση.</span><span class="t-sr">Od malih porodičnih firmi do lanaca u širenju — sorsing za sve vrste biznisa.</span></p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <div class="service-num">🍔</div>
+        <h3><span class="t-sq">Ushqim & Fast-Food</span><span class="t-en">Food & Fast-Food</span><span class="t-it">Cibo & Fast-Food</span><span class="t-el">Φαγητό & Fast-Food</span><span class="t-sr">Hrana & Fast-Food</span></h3>
+        <p><span class="t-sq">Pajisje kuzhine, ambalazhe dhe mobilje lokali.</span><span class="t-en">Kitchen equipment, packaging and shop furniture.</span><span class="t-it">Attrezzature da cucina, imballaggi e arredi per locali.</span><span class="t-el">Εξοπλισμός κουζίνας, συσκευασία και επίπλωση καταστήματος.</span><span class="t-sr">Kuhinjska oprema, pakovanje i nameštaj za lokal.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">💇</div>
+        <h3><span class="t-sq">Bukuri & Kujdes Personal</span><span class="t-en">Beauty & Personal Care</span><span class="t-it">Bellezza & Cura Personale</span><span class="t-el">Ομορφιά & Προσωπική Φροντίδα</span><span class="t-sr">Lepota & Lična Nega</span></h3>
+        <p><span class="t-sq">Pajisje salloni, produkte dhe mobilje specifike.</span><span class="t-en">Salon equipment, products and specialized furniture.</span><span class="t-it">Attrezzature per saloni, prodotti e arredi specifici.</span><span class="t-el">Εξοπλισμός σαλονιού, προϊόντα και ειδική επίπλωση.</span><span class="t-sr">Salonska oprema, proizvodi i specijalizovan nameštaj.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">🍹</div>
+        <h3><span class="t-sq">Bare & Lokale</span><span class="t-en">Bars & Venues</span><span class="t-it">Bar & Locali</span><span class="t-el">Μπαρ & Χώροι</span><span class="t-sr">Barovi & Lokali</span></h3>
+        <p><span class="t-sq">Pajisje, mobilje dhe dekor për ambiente shërbimi.</span><span class="t-en">Equipment, furniture and decor for service venues.</span><span class="t-it">Attrezzature, arredi e decorazioni per locali.</span><span class="t-el">Εξοπλισμός, έπιπλα και διακόσμηση για χώρους εξυπηρέτησης.</span><span class="t-sr">Oprema, nameštaj i dekor za uslužne prostore.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">🏗️</div>
+        <h3><span class="t-sq">Ndërtim & Hidraulikë</span><span class="t-en">Construction & Hardware</span><span class="t-it">Edilizia & Ferramenta</span><span class="t-el">Κατασκευές & Είδη Υδραυλικής</span><span class="t-sr">Građevina & Instalacije</span></h3>
+        <p><span class="t-sq">Materiale dhe pajisje industriale me shumicë.</span><span class="t-en">Bulk materials and industrial equipment.</span><span class="t-it">Materiali all'ingrosso e attrezzature industriali.</span><span class="t-el">Χονδρικά υλικά και βιομηχανικός εξοπλισμός.</span><span class="t-sr">Materijali na veliko i industrijska oprema.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">🛍️</div>
+        <h3><span class="t-sq">Tregti me Pakicë</span><span class="t-en">Retail</span><span class="t-it">Vendita al Dettaglio</span><span class="t-el">Λιανικό Εμπόριο</span><span class="t-sr">Maloprodaja</span></h3>
+        <p><span class="t-sq">Produkte për shitje dhe ambalazhe të personalizuara.</span><span class="t-en">Products for resale and custom packaging.</span><span class="t-it">Prodotti per la rivendita e imballaggi personalizzati.</span><span class="t-el">Προϊόντα προς μεταπώληση και προσαρμοσμένη συσκευασία.</span><span class="t-sr">Proizvodi za preprodaju i prilagođeno pakovanje.</span></p>
+      </div>
+      <div class="service-card">
+        <div class="service-num">📦</div>
+        <h3><span class="t-sq">E-commerce & Shpërndarje</span><span class="t-en">E-commerce & Distribution</span><span class="t-it">E-commerce & Distribuzione</span><span class="t-el">E-commerce & Διανομή</span><span class="t-sr">E-trgovina & Distribucija</span></h3>
+        <p><span class="t-sq">Sasi me shumicë dhe paketim special për dërgesa.</span><span class="t-en">Wholesale quantities and special packaging for shipping.</span><span class="t-it">Quantità all'ingrosso e imballaggi speciali per la spedizione.</span><span class="t-el">Χονδρικές ποσότητες και ειδική συσκευασία για αποστολή.</span><span class="t-sr">Veleprodajne količine i posebno pakovanje za otpremu.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="katalogu">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow"><span class="t-sq">Katalogu</span><span class="t-en">Catalog</span><span class="t-it">Catalogo</span><span class="t-el">Κατάλογος</span><span class="t-sr">Katalog</span></div>
+      <h2><span class="t-sq">Produkte që sjellim me porosi</span><span class="t-en">Products we bring to order</span><span class="t-it">Prodotti che portiamo su ordinazione</span><span class="t-el">Προϊόντα που φέρνουμε κατά παραγγελία</span><span class="t-sr">Proizvodi koje donosimo po porudžbini</span></h2>
+      <p><span class="t-sq">Shikoni produktet sipas kategorisë dhe na shkruani për atë që ju intereson. Çmimi final vjen me ofertë brenda 24 orëve.</span><span class="t-en">Browse products by category and message us about the one you like. The final price comes with a quote within 24 hours.</span><span class="t-it">Sfoglia i prodotti per categoria e scrivici per quello che ti interessa. Il prezzo finale arriva con un preventivo entro 24 ore.</span><span class="t-el">Δείτε τα προϊόντα ανά κατηγορία και γράψτε μας για αυτό που σας ενδιαφέρει. Η τελική τιμή έρχεται με προσφορά εντός 24 ωρών.</span><span class="t-sr">Pregledajte proizvode po kategorijama i pišite nam za onaj koji vas zanima. Konačna cena stiže uz ponudu u roku od 24 sata.</span></p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="services-grid reveal">
+      <a class="service-card" href="katalog/#makina">
+        <div class="service-num">🚗</div>
+        <h3><span class="t-sq">Makina</span><span class="t-en">Cars</span><span class="t-it">Auto</span><span class="t-el">Αυτοκίνητα</span><span class="t-sr">Automobili</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+      <a class="service-card" href="katalog/#motorra">
+        <div class="service-num">🏍️</div>
+        <h3><span class="t-sq">Motorra</span><span class="t-en">Motorcycles</span><span class="t-it">Moto</span><span class="t-el">Μοτοσικλέτες</span><span class="t-sr">Motocikli</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+      <a class="service-card" href="katalog/#makineta">
+        <div class="service-num">🛵</div>
+        <h3><span class="t-sq">Makineta & Skuter</span><span class="t-en">Mopeds & Scooters</span><span class="t-it">Ciclomotori & Scooter</span><span class="t-el">Μοτοποδήλατα & Σκούτερ</span><span class="t-sr">Mopedi i Skuteri</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+      <a class="service-card" href="katalog/#kuzhine">
+        <div class="service-num">🍳</div>
+        <h3><span class="t-sq">Pajisje Kuzhine</span><span class="t-en">Kitchen Equipment</span><span class="t-it">Attrezzature da Cucina</span><span class="t-el">Εξοπλισμός Κουζίνας</span><span class="t-sr">Kuhinjska Oprema</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+      <a class="service-card" href="katalog/#kondicionere">
+        <div class="service-num">❄️</div>
+        <h3><span class="t-sq">Kondicionerë</span><span class="t-en">Air Conditioners</span><span class="t-it">Condizionatori</span><span class="t-el">Κλιματιστικά</span><span class="t-sr">Klima Uređaji</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+      <a class="service-card" href="katalog/#mobileri">
+        <div class="service-num">🛋️</div>
+        <h3><span class="t-sq">Mobileri</span><span class="t-en">Furniture</span><span class="t-it">Arredamento</span><span class="t-el">Έπιπλα</span><span class="t-sr">Nameštaj</span></h3>
+        <p><span class="t-sq">Shiko produktet</span><span class="t-en">View products</span><span class="t-it">Vedi i prodotti</span><span class="t-el">Δείτε τα προϊόντα</span><span class="t-sr">Pogledaj proizvode</span> →</p>
+      </a>
+    </div>
+    <div class="hero-ctas" style="margin-top:28px">
+      <a href="katalog/" class="btn btn-primary"><span class="t-sq">Hap katalogun</span><span class="t-en">Open the catalog</span><span class="t-it">Apri il catalogo</span><span class="t-el">Ανοίξτε τον κατάλογο</span><span class="t-sr">Otvori katalog</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="process" id="procesi">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" data-i18n="process.eyebrow"><span class="t-sq">Procesi</span><span class="t-en">Process</span><span class="t-it">Processo</span><span class="t-el">Διαδικασία</span><span class="t-sr">Proces</span></div>
+      <h2 data-i18n="process.title"><span class="t-sq">Si punojmë, hap pas hapi</span><span class="t-en">How we work, step by step</span><span class="t-it">Come lavoriamo, passo dopo passo</span><span class="t-el">Πώς δουλεύουμε, βήμα προς βήμα</span><span class="t-sr">Kako radimo, korak po korak</span></h2>
+      <p data-i18n="process.lead"><span class="t-sq">Nga ideja te produkti final në duart tuaja — pa u shqetësuar për asnjë detaj.</span><span class="t-en">From idea to final product in your hands — without worrying about a single detail.</span><span class="t-it">Dall'idea al prodotto finale nelle tue mani — senza preoccuparti di alcun dettaglio.</span><span class="t-el">Από την ιδέα στο τελικό προϊόν στα χέρια σας — χωρίς να ανησυχείτε για καμία λεπτομέρεια.</span><span class="t-sr">Od ideje do finalnog proizvoda u vašim rukama — bez brige o ijednom detalju.</span></p>
+    </div>
+    <div class="timeline reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p1t"><span class="t-sq">Na thoni çfarë kërkoni</span><span class="t-en">Tell us what you need</span><span class="t-it">Dicci cosa cerchi</span><span class="t-el">Πείτε μας τι χρειάζεστε</span><span class="t-sr">Recite nam šta tražite</span></h3>
+          <p data-i18n="process.p1p"><span class="t-sq">Na tregoni produktin që doni të sillni — sasi, specifikime dhe buxhet.</span><span class="t-en">Tell us the product you want to bring — quantity, specs and budget.</span><span class="t-it">Indicaci il prodotto che vuoi importare — quantità, specifiche e budget.</span><span class="t-el">Πείτε μας το προϊόν που θέλετε να φέρετε — ποσότητα, προδιαγραφές και προϋπολογισμό.</span><span class="t-sr">Recite nam proizvod koji želite da uvezete — količinu, specifikacije i budžet.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p2t"><span class="t-sq">Gjejmë fabrikën</span><span class="t-en">We find the factory</span><span class="t-it">Troviamo la fabbrica</span><span class="t-el">Βρίσκουμε το εργοστάσιο</span><span class="t-sr">Pronalazimo fabriku</span></h3>
+          <p data-i18n="process.p2p"><span class="t-sq">Kërkojmë prodhues të besueshëm në Kinë dhe krahasojmë oferta të shumta.</span><span class="t-en">We search for reliable manufacturers in China and compare multiple offers.</span><span class="t-it">Cerchiamo produttori affidabili in Cina e confrontiamo più offerte.</span><span class="t-el">Αναζητούμε αξιόπιστους κατασκευαστές στην Κίνα και συγκρίνουμε πολλές προσφορές.</span><span class="t-sr">Tražimo pouzdane proizvođače u Kini i upoređujemo više ponuda.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p3t"><span class="t-sq">Dërgojmë modele & çmim</span><span class="t-en">We send samples & price</span><span class="t-it">Inviamo campioni & prezzo</span><span class="t-el">Στέλνουμε δείγματα & τιμή</span><span class="t-sr">Šaljemo uzorke i cenu</span></h3>
+          <p data-i18n="process.p3p"><span class="t-sq">Ju paraqesim mostrat, fotot dhe çmimin final për miratimin tuaj.</span><span class="t-en">We present samples, photos and the final price for your approval.</span><span class="t-it">Ti presentiamo campioni, foto e il prezzo finale per la tua approvazione.</span><span class="t-el">Σας παρουσιάζουμε δείγματα, φωτογραφίες και την τελική τιμή για έγκριση.</span><span class="t-sr">Predstavljamo vam uzorke, fotografije i finalnu cenu na odobrenje.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p4t"><span class="t-sq">Inspektojmë & blejmë</span><span class="t-en">We inspect & purchase</span><span class="t-it">Ispezioniamo & acquistiamo</span><span class="t-el">Ελέγχουμε & αγοράζουμε</span><span class="t-sr">Proveravamo i kupujemo</span></h3>
+          <p data-i18n="process.p4p"><span class="t-sq">Kontrollojmë cilësinë në fabrikë dhe finalizojmë blerjen në emrin tuaj.</span><span class="t-en">We check quality at the factory and finalize the purchase on your behalf.</span><span class="t-it">Controlliamo la qualità in fabbrica e finalizziamo l'acquisto per tuo conto.</span><span class="t-el">Ελέγχουμε την ποιότητα στο εργοστάσιο και ολοκληρώνουμε την αγορά για λογαριασμό σας.</span><span class="t-sr">Proveravamo kvalitet u fabrici i finalizujemo kupovinu u vaše ime.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p5t"><span class="t-sq">Letrat & paketimi</span><span class="t-en">Paperwork & packing</span><span class="t-it">Documenti & imballaggio</span><span class="t-el">Έγγραφα & συσκευασία</span><span class="t-sr">Dokumenti i pakovanje</span></h3>
+          <p data-i18n="process.p5p"><span class="t-sq">Përgatisim dokumentacionin dhe mbikëqyrim paketimin e sigurt për transport.</span><span class="t-en">We prepare documentation and oversee safe packing for transport.</span><span class="t-it">Prepariamo la documentazione e supervisioniamo l'imballaggio sicuro per il trasporto.</span><span class="t-el">Ετοιμάζουμε τα έγγραφα και επιβλέπουμε την ασφαλή συσκευασία για μεταφορά.</span><span class="t-sr">Pripremamo dokumentaciju i nadgledamo bezbedno pakovanje za transport.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">06</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p6t"><span class="t-sq">Dërgesa</span><span class="t-en">Shipping</span><span class="t-it">Spedizione</span><span class="t-el">Αποστολή</span><span class="t-sr">Otprema</span></h3>
+          <p data-i18n="process.p6p"><span class="t-sq">Organizojmë transportin nga fabrika deri në portin/dogannën e vendit tuaj.</span><span class="t-en">We arrange transport from the factory to your country's port/customs.</span><span class="t-it">Organizziamo il trasporto dalla fabbrica al porto/dogana del tuo paese.</span><span class="t-el">Οργανώνουμε τη μεταφορά από το εργοστάσιο μέχρι το λιμάνι/τελωνείο της χώρας σας.</span><span class="t-sr">Organizujemo transport od fabrike do luke/carine u vašoj zemlji.</span></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">07</div>
+        <div class="step-body">
+          <h3 data-i18n="process.p7t"><span class="t-sq">Zhdoganimi & dorëzimi</span><span class="t-en">Customs clearance & delivery</span><span class="t-it">Sdoganamento & consegna</span><span class="t-el">Εκτελωνισμός & παράδοση</span><span class="t-sr">Carinjenje i isporuka</span></h3>
+          <p data-i18n="process.p7p"><span class="t-sq">Kryejmë zhdoganimin dhe ju dorëzojmë mallin gati për përdorim.</span><span class="t-en">We complete customs clearance and deliver the goods ready to use.</span><span class="t-it">Completiamo lo sdoganamento e consegniamo la merce pronta all'uso.</span><span class="t-el">Ολοκληρώνουμε τον εκτελωνισμό και παραδίδουμε το εμπόρευμα έτοιμο για χρήση.</span><span class="t-sr">Završavamo carinjenje i isporučujemo robu spremnu za upotrebu.</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><hr class="divider"></div>
+
+<div class="stats-strip reveal">
+  <div class="stat-box"><b>7</b><span data-i18n="stats.s1"><span class="t-sq">Hapa të Menaxhuar</span><span class="t-en">Steps Managed</span><span class="t-it">Fasi Gestite</span><span class="t-el">Βήματα υπό Διαχείριση</span><span class="t-sr">Koraka pod Upravom</span></span></div>
+  <div class="stat-box"><b>5</b><span data-i18n="stats.s2"><span class="t-sq">Gjuhë të Shërbimit</span><span class="t-en">Service Languages</span><span class="t-it">Lingue di Servizio</span><span class="t-el">Γλώσσες Εξυπηρέτησης</span><span class="t-sr">Jezika Usluge</span></span></div>
+  <div class="stat-box"><b>CN→AL</b><span data-i18n="stats.s3"><span class="t-sq">Rrugë e Plotë</span><span class="t-en">Full Route</span><span class="t-it">Percorso Completo</span><span class="t-el">Πλήρης Διαδρομή</span><span class="t-sr">Kompletna Ruta</span></span></div>
+  <div class="stat-box"><b>1</b><span data-i18n="stats.s4"><span class="t-sq">Kontakt i Vetëm</span><span class="t-en">Single Contact</span><span class="t-it">Contatto Unico</span><span class="t-el">Ένας Μόνο Επαφή</span><span class="t-sr">Jedan Kontakt</span></span></div>
+</div>
+
+<section id="galeria">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow" data-i18n="gallery.eyebrow"><span class="t-sq">Nga Terreni</span><span class="t-en">From the Field</span><span class="t-it">Dal Campo</span><span class="t-el">Από το Πεδίο</span><span class="t-sr">Sa Terena</span></div>
+      <h2 data-i18n="gallery.title"><span class="t-sq">Ngarkesa reale, klientë realë</span><span class="t-en">Real shipments, real clients</span><span class="t-it">Spedizioni reali, clienti reali</span><span class="t-el">Πραγματικές αποστολές, πραγματικοί πελάτες</span><span class="t-sr">Prave pošiljke, pravi klijenti</span></h2>
+      <p data-i18n="gallery.lead"><span class="t-sq">Foto nga procesi ynë i ngarkimit dhe dërgesave — nga fabrika te dogana.</span><span class="t-en">Photos from our loading and shipping process — from factory to customs.</span><span class="t-it">Foto dal nostro processo di carico e spedizione — dalla fabbrica alla dogana.</span><span class="t-el">Φωτογραφίες από τη διαδικασία φόρτωσης και αποστολής μας — από το εργοστάσιο μέχρι το τελωνείο.</span><span class="t-sr">Fotografije iz našeg procesa utovara i otpreme — od fabrike do carine.</span></p>
+    </div>
+    <div class="gallery-grid reveal">
+      <div class="gallery-item">
+        <img src="img/galeri-1.jpg" alt="Ngarkim me karrelevator">
+        <div class="gallery-cap" data-i18n="gallery.g1"><span class="t-sq">Ngarkim në kamion</span><span class="t-en">Truck loading</span><span class="t-it">Carico su camion</span><span class="t-el">Φόρτωση φορτηγού</span><span class="t-sr">Utovar kamiona</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="img/galeri-2.jpg" alt="Kuti të paletizuara në kontejner">
+        <div class="gallery-cap" data-i18n="gallery.g2"><span class="t-sq">Mallra të paletizuara</span><span class="t-en">Palletized goods</span><span class="t-it">Merce paletizzata</span><span class="t-el">Παλετοποιημένα εμπορεύματα</span><span class="t-sr">Paletizovana roba</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="img/galeri-3.jpg" alt="Fuçi në kontejner">
+        <div class="gallery-cap" data-i18n="gallery.g3"><span class="t-sq">Ngarkesë industriale</span><span class="t-en">Industrial cargo</span><span class="t-it">Carico industriale</span><span class="t-el">Βιομηχανικό φορτίο</span><span class="t-sr">Industrijski teret</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="img/galeri-4.jpg" alt="Bidona plastikë në kamion">
+        <div class="gallery-cap" data-i18n="gallery.g4"><span class="t-sq">Kontroll ngarkese</span><span class="t-en">Cargo inspection</span><span class="t-it">Controllo del carico</span><span class="t-el">Έλεγχος φορτίου</span><span class="t-sr">Kontrola tereta</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="img/galeri-5.jpg" alt="Makineri e paketuar në kasë druri">
+        <div class="gallery-cap" data-i18n="gallery.g5"><span class="t-sq">Paketim special druri</span><span class="t-en">Special wood packing</span><span class="t-it">Imballaggio speciale in legno</span><span class="t-el">Ειδική ξύλινη συσκευασία</span><span class="t-sr">Posebno drveno pakovanje</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="img/galeri-6.jpg" alt="Dorëzim në Shqipëri">
+        <div class="gallery-cap" data-i18n="gallery.g6"><span class="t-sq">Dorëzim në Shqipëri</span><span class="t-en">Delivery in Albania</span><span class="t-it">Consegna in Albania</span><span class="t-el">Παράδοση στην Αλβανία</span><span class="t-sr">Isporuka u Albaniji</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="contact" id="kontakt">
+  <div class="wrap">
+    <div class="contact-box reveal">
+      <div class="contact-left">
+        <h2 data-i18n="contact.title"><span class="t-sq">Flasim për ngarkesën tuaj</span><span class="t-en">Let's talk about your shipment</span><span class="t-it">Parliamo della tua spedizione</span><span class="t-el">Ας μιλήσουμε για την αποστολή σας</span><span class="t-sr">Razgovarajmo o vašoj pošiljci</span></h2>
+        <p data-i18n="contact.lead"><span class="t-sq">Na kontaktoni për një ofertë falas — pa detyrim, brenda 24 orëve.</span><span class="t-en">Contact us for a free quote — no obligation, within 24 hours.</span><span class="t-it">Contattaci per un preventivo gratuito — senza impegno, entro 24 ore.</span><span class="t-el">Επικοινωνήστε μαζί μας για δωρεάν προσφορά — χωρίς δέσμευση, εντός 24 ωρών.</span><span class="t-sr">Kontaktirajte nas za besplatnu ponudu — bez obaveze, u roku od 24 sata.</span></p>
+        <div class="contact-line">
+          <div class="contact-ico">☎</div>
+          <a href="tel:+355694655011">+355 69 465 5011</a>
+        </div>
+        <div class="contact-line">
+          <div class="contact-ico">📍</div>
+          <span class="val" data-i18n="contact.location"><span class="t-sq">Durrës, Shqipëri — zyra qendrore, shërbejmë gjithë Evropën</span><span class="t-en">Durrës, Albania — headquarters, serving all of Europe</span><span class="t-it">Durazzo, Albania — sede centrale, serviamo tutta l'Europa</span><span class="t-el">Δυρράχιο, Αλβανία — έδρα, εξυπηρετούμε όλη την Ευρώπη</span><span class="t-sr">Drač, Albanija — sedište, uslužujemo celu Evropu</span></span>
+        </div>
+        <div class="contact-line">
+          <div class="contact-ico">🕐</div>
+          <span class="val" data-i18n="contact.hours"><span class="t-sq">E Hënë – E Shtunë, 09:00–18:00</span><span class="t-en">Monday – Saturday, 09:00–18:00</span><span class="t-it">Lunedì – Sabato, 09:00–18:00</span><span class="t-el">Δευτέρα – Σάββατο, 09:00–18:00</span><span class="t-sr">Ponedeljak – Subota, 09:00–18:00</span></span>
+        </div>
+      </div>
+      <div class="contact-right">
+        <div class="tag" data-i18n="contact.tag"><span class="t-sq">Pse ERSO GROUP</span><span class="t-en">Why ERSO GROUP</span><span class="t-it">Perché ERSO GROUP</span><span class="t-el">Γιατί ERSO GROUP</span><span class="t-sr">Zašto ERSO GROUP</span></div>
+        <ul>
+          <li data-i18n="contact.w1"><span class="t-sq">Kontakt i drejtpërdrejtë me fabrikat, pa ndërmjetës të panevojshëm</span><span class="t-en">Direct contact with factories, no unnecessary middlemen</span><span class="t-it">Contatto diretto con le fabbriche, senza intermediari inutili</span><span class="t-el">Άμεση επαφή με τα εργοστάσια, χωρίς περιττούς μεσάζοντες</span><span class="t-sr">Direktan kontakt sa fabrikama, bez nepotrebnih posrednika</span></li>
+          <li data-i18n="contact.w2"><span class="t-sq">Inspektim fizik i cilësisë para dërgesës</span><span class="t-en">Physical quality inspection before shipment</span><span class="t-it">Ispezione fisica della qualità prima della spedizione</span><span class="t-el">Φυσικός έλεγχος ποιότητας πριν την αποστολή</span><span class="t-sr">Fizička kontrola kvaliteta pre otpreme</span></li>
+          <li data-i18n="contact.w3"><span class="t-sq">Menaxhim i plotë i dokumentacionit doganor</span><span class="t-en">Full management of customs documentation</span><span class="t-it">Gestione completa della documentazione doganale</span><span class="t-el">Πλήρης διαχείριση τελωνειακών εγγράφων</span><span class="t-sr">Potpuno upravljanje carinskom dokumentacijom</span></li>
+          <li data-i18n="contact.w4"><span class="t-sq">Përvojë reale me ngarkesa industriale dhe komerciale</span><span class="t-en">Real experience with industrial and commercial cargo</span><span class="t-it">Esperienza reale con carichi industriali e commerciali</span><span class="t-el">Πραγματική εμπειρία με βιομηχανικά και εμπορικά φορτία</span><span class="t-sr">Pravo iskustvo sa industrijskim i komercijalnim teretom</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; width:100%;">
+    <div class="foot-logo">
+      <img src="img/logo.png" alt="ERSO GROUP">
+      <span>ERSO GROUP SHPK</span>
+    </div>
+    <small data-i18n="footer.rights"><span class="t-sq">© 2026 ERSO GROUP SHPK. Të gjitha të drejtat e rezervuara.</span><span class="t-en">© 2026 ERSO GROUP SHPK. All rights reserved.</span><span class="t-it">© 2026 ERSO GROUP SHPK. Tutti i diritti riservati.</span><span class="t-el">© 2026 ERSO GROUP SHPK. Με επιφύλαξη παντός δικαιώματος.</span><span class="t-sr">© 2026 ERSO GROUP SHPK. Sva prava zadržana.</span></small>
+  </div>
+</footer>
+
+<script>
+// Optional cosmetic enhancement only: close the country dropdown after a
+// selection so the person doesn't have to tap it again. Every other
+// feature on this page (language switch, mobile menu, country display)
+// works purely via CSS and is unaffected if this script does not run.
+try{
+  document.querySelectorAll('input[name="country"]').forEach(function(radio){
+    radio.addEventListener('change', function(){
+      var open = document.querySelector('details.country-dd[open]');
+      if(open) open.removeAttribute('open');
+    });
+  });
+}catch(e){ /* ignore: dropdown simply stays open, no functional loss */ }
+
+try{
+  var navToggle = document.getElementById('nav-toggle');
+  document.querySelectorAll('.nav-links a').forEach(function(link){
+    link.addEventListener('click', function(){
+      if(navToggle) navToggle.checked = false;
+    });
+  });
+}catch(e){ /* ignore: menu simply stays open until tapped again */ }
+</script>
+
+</body>
+</html>

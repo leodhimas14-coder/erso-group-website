@@ -1,0 +1,135 @@
+# Decap CMS — paneli për produktet e katalogut.
+# Hyrja bëhet me llogarinë GitHub që ka të drejtë shkrimi në repo.
+backend:
+  name: github
+  repo: leodhimas14-coder/erso-group-website
+  branch: main
+  base_url: https://api.netlify.com
+  commit_messages:
+    create: "Katalogu: shto {{slug}}"
+    update: "Katalogu: ndrysho {{slug}}"
+    delete: "Katalogu: fshi {{slug}}"
+    uploadMedia: "Katalogu: ngarko {{path}}"
+    deleteMedia: "Katalogu: fshi {{path}}"
+
+locale: en
+site_url: /
+display_url: /katalog/
+logo_url: /img/logo.png
+
+# Fotot ruhen te site/foto dhe shfaqen te faqja si /foto/emri.jpg
+media_folder: site/foto
+public_folder: /foto
+
+collections:
+  - name: produkte
+    label: Produktet
+    label_singular: Produkt
+    description: "Çdo produkt këtu del te faqja /katalog/ pas 1–2 minutash."
+    folder: content/produkte
+    extension: json
+    format: json
+    create: true
+    delete: true
+    slug: "{{slug}}"
+    identifier_field: titulli
+    summary: "{{titulli}} — {{kategoria}} — {{statusi}}"
+    sortable_fields: [data, titulli, kategoria]
+    view_filters:
+      - { label: Makina, field: kategoria, pattern: makina }
+      - { label: Motorra, field: kategoria, pattern: motorra }
+      - { label: Makineta, field: kategoria, pattern: makineta }
+      - { label: Kuzhinë, field: kategoria, pattern: kuzhine }
+      - { label: Kondicionerë, field: kategoria, pattern: kondicionere }
+      - { label: Mobileri, field: kategoria, pattern: mobileri }
+    fields:
+      - label: Emri i produktit
+        name: titulli
+        widget: string
+        hint: "p.sh. Kondicioner Gree 12000 BTU Inverter"
+      - label: Kategoria
+        name: kategoria
+        widget: relation
+        collection: cilesimet
+        file: kategorite
+        search_fields: ["kategorite.*.emri"]
+        display_fields: ["kategorite.*.emri"]
+        value_field: "kategorite.*.id"
+      - label: Çmimi
+        name: cmimi
+        widget: number
+        value_type: int
+        min: 0
+        required: false
+        hint: "Lëreni bosh për 'Çmimi sipas kërkesës'."
+      - label: Monedha
+        name: monedha
+        widget: select
+        options: ["€", "Lekë", "$"]
+        default: "€"
+      - label: Statusi
+        name: statusi
+        widget: select
+        default: porosi
+        options:
+          - { label: "Me porosi", value: porosi }
+          - { label: "Në stok", value: stok }
+          - { label: "Në rrugë", value: rruge }
+      - label: Afati i dorëzimit
+        name: afati
+        widget: string
+        required: false
+        hint: "p.sh. 30–45 ditë"
+      - label: Përshkrimi
+        name: pershkrimi
+        widget: text
+        required: false
+      - label: Specifikimet
+        name: specifikimet
+        widget: list
+        required: false
+        summary: "{{fields.emri}}: {{fields.vlera}}"
+        fields:
+          - { label: Emri, name: emri, widget: string, hint: "p.sh. Fuqia" }
+          - { label: Vlera, name: vlera, widget: string, hint: "p.sh. 12000 BTU" }
+      - label: Fotot
+        name: fotot
+        widget: list
+        required: false
+        max: 8
+        summary: "{{fields.foto}}"
+        hint: "E para del në kartë. Përdorni foto horizontale (4:3)."
+        fields:
+          - { label: Foto, name: foto, widget: image, choose_url: false }
+      - label: Foto reale (të bëra nga ne ose nga fabrika)
+        name: foto_reale
+        widget: boolean
+        default: false
+        hint: "Aktivizojeni vetëm kur fotot janë tuajat ose të fabrikës, jo nga interneti. Te produkti shfaqet '✓ Foto reale'."
+      - label: Shfaqe në faqe
+        name: publikuar
+        widget: boolean
+        default: true
+        hint: "Çaktivizojeni për ta fshehur produktin pa e fshirë."
+      - label: Data
+        name: data
+        widget: datetime
+        hint: "Produktet më të reja dalin të parat."
+
+  - name: cilesimet
+    label: Kategoritë
+    editor: { preview: false }
+    files:
+      - name: kategorite
+        label: Kategoritë e katalogut
+        file: content/kategorite.json
+        format: json
+        fields:
+          - label: Kategoritë
+            name: kategorite
+            widget: list
+            summary: "{{fields.ikona}} {{fields.emri}}"
+            fields:
+              - { label: Emri, name: emri, widget: string }
+              - { label: ID (pa hapësira, p.sh. telefona), name: id, widget: string, pattern: ["^[a-z0-9-]+$", "Vetëm shkronja të vogla, numra dhe viza"] }
+              - { label: Ikona (emoji), name: ikona, widget: string, required: false }
