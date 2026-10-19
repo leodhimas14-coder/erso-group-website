@@ -159,10 +159,17 @@ body{margin:0}
 .trust p{color:var(--muted);margin:8px 0 0}
 .trust-imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .trust-imgs img{width:100%;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);border-radius:2px;max-width:100%}
+.ico{display:inline-grid;place-items:center;width:58px;height:58px;flex-shrink:0;border-radius:6px;background:radial-gradient(circle at 30% 15%,rgba(255,255,255,.07),transparent 60%),linear-gradient(160deg,#23242b,#111114);border:1px solid #34353d;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 -1px 0 rgba(200,31,47,.45),0 12px 26px rgba(0,0,0,.4)}
+.ico svg{width:36px;height:36px;fill:none;stroke:url(#icoSilver);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.ico svg .a{stroke:var(--red)}
+.ico-sm{width:46px;height:46px}
+.ico-sm svg{width:28px;height:28px}
+.cat .ico{margin-bottom:4px}
 </style>
 </head>
 <body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="icoSilver" gradientUnits="userSpaceOnUse" x1="0" y1="4" x2="0" y2="44"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#8f939b"/></linearGradient></defs></svg>
 <header class="top">
   <div class="wrap top-in">
     <a class="brand" href="../"><img src="../img/logo.png" alt="ERSO GROUP SHPK"><b>ERSO <span>GROUP</span> SHPK</b></a>
@@ -289,6 +296,14 @@ body{margin:0}
     i.addEventListener('error', function once() { i.removeEventListener('error', once); if (i.src.indexOf('/.netlify/images') !== -1) i.src = src; });
     return i;
   }
+  var CAT_ICONS = {"makina": "<path d=\"M4 33v-8l6-9h21l8 9h5v8z\"/><circle cx=\"13\" cy=\"34\" r=\"4.5\"/><circle cx=\"35\" cy=\"34\" r=\"4.5\"/><path class=\"a\" d=\"M12 25l4-6h7v6z\"/><path class=\"a\" d=\"M26 25v-6h3l5 6z\"/>", "motorra": "<circle cx=\"10\" cy=\"33\" r=\"7\"/><circle cx=\"38\" cy=\"33\" r=\"7\"/><path d=\"M10 33l8-12h11l9 12\"/><path d=\"M29 21l4-7h6\"/><path d=\"M18 21l-3-5h-5\"/><path class=\"a\" d=\"M19 25h10\"/><circle class=\"a\" cx=\"10\" cy=\"33\" r=\"1.5\"/><circle class=\"a\" cx=\"38\" cy=\"33\" r=\"1.5\"/>", "makineta": "<circle cx=\"11\" cy=\"36\" r=\"5\"/><circle cx=\"37\" cy=\"36\" r=\"5\"/><path d=\"M11 36h12l6-7h8\"/><path d=\"M33 29l3-19h6\"/><path d=\"M13 26h12v3\"/><path class=\"a\" d=\"M36 10h-4\"/><path class=\"a\" d=\"M16 22h7\"/>", "kuzhine": "<path d=\"M10 20h28v14a5 5 0 01-5 5H15a5 5 0 01-5-5z\"/><path d=\"M5 22h5M38 22h5\"/><path d=\"M12 16h24M24 12v4\"/><path class=\"a\" d=\"M16 45c-1-2 2-3 1-5M24 45c-1-2 2-3 1-5M32 45c-1-2 2-3 1-5\"/>", "kondicionere": "<rect x=\"4\" y=\"9\" width=\"40\" height=\"17\" rx=\"3\"/><path d=\"M8 21h32\"/><circle cx=\"37\" cy=\"14\" r=\"1.2\"/><path class=\"a\" d=\"M14 31c-2 3 2 5 0 9M24 31c-2 3 2 5 0 9M34 31c-2 3 2 5 0 9\"/>", "mobileri": "<path d=\"M10 22v-8a4 4 0 014-4h20a4 4 0 014 4v8\"/><path d=\"M4 25a4 4 0 018 0v6h24v-6a4 4 0 018 0v11H4z\"/><path d=\"M8 36v5M40 36v5\"/><path class=\"a\" d=\"M24 11v14\"/>", "all": "<path d=\"M8 8h13v13H8zM27 8h13v13H27zM8 27h13v13H8z\"/><path class=\"a\" d=\"M27 27h13v13H27z\"/>"};
+  function catIcon(c) {
+    var inner = CAT_ICONS[c.id];
+    if (!inner) return el('span', { class: 'ic', text: c.icon || '📦', 'aria-hidden': 'true' });
+    var s = el('span', { class: 'ico ico-sm', 'aria-hidden': 'true' });
+    s.innerHTML = '<svg viewBox="0 0 48 48" focusable="false">' + inner + '</svg>';
+    return s;
+  }
   function catOf(id) { return state.categories.find(function (c) { return c.id === id; }) || { name: 'Të tjera', icon: '📦' }; }
   function fmtPrice(p) {
     if (p.price == null || isNaN(p.price)) return null;
@@ -324,7 +339,7 @@ body{margin:0}
         class: 'cat', type: 'button', 'aria-pressed': String(ui.cat === c.id),
         onclick: function () { selectCat(c.id, true); }
       }, [
-        el('span', { class: 'ic', text: c.icon || '📦', 'aria-hidden': 'true' }),
+        catIcon(c),
         el('span', { class: 'nm', text: c.name }),
         el('span', { class: 'ct', text: n === 1 ? '1 produkt' : n + ' produkte' })
       ]));
