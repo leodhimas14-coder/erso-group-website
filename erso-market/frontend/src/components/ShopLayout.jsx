@@ -6,6 +6,7 @@ import MenuDrawer from './MenuDrawer';
 import SearchOverlay from './SearchOverlay';
 import DemoBar from './DemoBar';
 import Logo from './Logo';
+import IntroSplash from './IntroSplash';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useConfig } from '../context/ConfigContext';
@@ -46,6 +47,7 @@ export default function ShopLayout() {
 
   return (
     <div className="shop">
+      <IntroSplash />
       <DemoBar />
       <header className="shop-header" ref={headerRef}>
         <div className="container shop-header-inner">

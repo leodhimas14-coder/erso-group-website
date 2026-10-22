@@ -582,3 +582,35 @@ h1, h2, h3, .page-title, .section-head h2 { font-family: var(--font-display); fo
 /* Floating WhatsApp button */
 .wa-float { position: fixed; z-index: 45; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 54px; height: 54px; border-radius: 50%; background: #25d366; color: #fff; display: grid; place-items: center; box-shadow: 0 8px 22px rgb(0 0 0 / 0.25); }
 .wa-float:hover { filter: brightness(1.05); }
+
+/* Intro screen: shown once per visit, a tap opens the catalog */
+.intro { position: fixed; inset: 0; z-index: 100; display: grid; grid-template-rows: auto 1fr auto auto; justify-items: center; align-items: center; gap: 18px;
+  padding: calc(28px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  background: radial-gradient(ellipse 70% 55% at 50% 40%, rgb(200 31 47 / 0.14), transparent 70%), #0a0a0c; color: #fff; cursor: pointer; overflow: hidden;
+  animation: intro-in 0.5s ease both; transition: opacity 0.45s ease, transform 0.45s ease; }
+.intro-out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+@keyframes intro-in { from { opacity: 0; } }
+.intro-brand { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); letter-spacing: 0.16em; font-size: 1.15rem; }
+.intro-brand em { font-style: normal; color: var(--silver); }
+.intro-map { width: min(1100px, 100%); max-height: 56vh; height: auto; align-self: center; overflow: visible; }
+.intro-dots { fill: none; stroke: rgb(214 217 222 / 0.5); stroke-width: 2.8; stroke-linecap: round; }
+.intro-glow { fill: none; stroke: rgb(200 31 47 / 0.22); stroke-width: 9; stroke-linecap: round; }
+.intro-arc { fill: none; stroke: url(#introArc); stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw 1.6s 0.3s ease-out forwards; }
+@keyframes intro-draw { to { stroke-dashoffset: 0; } }
+.intro-ship { fill: #fff; filter: drop-shadow(0 0 6px #c81f2f); }
+.intro-pin { fill: var(--silver-bright, #f2f3f5); }
+.intro-pin.red { fill: #c81f2f; }
+.intro-ring { fill: none; stroke: #c9ccd1; stroke-width: 1.6; transform-box: fill-box; transform-origin: center; animation: intro-pulse 2.2s ease-out infinite; }
+.intro-ring.red { stroke: #c81f2f; }
+@keyframes intro-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
+.intro-code { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.14em; fill: #fff; paint-order: stroke; stroke: #0a0a0c; stroke-width: 5px; }
+.intro-title { margin: 0; text-align: center; font-family: var(--font-display); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.08; font-size: clamp(1.9rem, 5.4vw, 3.6rem); max-width: 18ch; }
+.intro-title span { display: block; background: linear-gradient(180deg, #fff, #c9ccd1 60%, #8d9096); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.intro-enter { border: 1px solid rgb(255 255 255 / 0.35); background: transparent; color: #fff; border-radius: 999px; padding: 12px 22px; font-family: var(--font); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; animation: intro-blink 2s ease-in-out infinite; }
+.intro-enter:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@keyframes intro-blink { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .intro, .intro-ring, .intro-enter { animation: none; }
+  .intro-arc { animation: none; stroke-dashoffset: 0; }
+  .intro-ship { display: none; }
+}
