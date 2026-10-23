@@ -53,22 +53,26 @@
 
   // In-page replacement for confirm(): the claude.ai viewer blocks native dialogs.
   // `typed` asks the user to type a word first; `cancel: null` makes it a plain notice.
-  function ask(msg, { ok = 'Po', cancel = 'Anulo', danger = false, typed = null, html = null, wide = false } = {}) {
+  function ask(msg, { ok = 'Po', cancel = 'Anulo', danger = false, typed = null, input = null, html = null, wide = false } = {}) {
     return new Promise((resolve) => {
       const wrap = document.createElement('div');
       wrap.className = 'modal';
       wrap.innerHTML = `<div class="dialog${wide ? ' wide' : ''}" role="dialog" aria-modal="true">
         <div class="msg"></div>${html || ''}
-        ${typed ? `<input type="text" class="typed" placeholder="${esc(typed)}" autocomplete="off">` : ''}
+        ${typed || input ? `<input type="text" class="typed" placeholder="${esc(typed || input)}" autocomplete="off">` : ''}
         <div class="row end">${cancel ? `<button class="btn" data-a="0">${esc(cancel)}</button>` : ''}
         ${ok ? `<button class="btn ${danger ? 'danger' : 'primary'}" data-a="1">${esc(ok)}</button>` : ''}</div></div>`;
       wrap.querySelector('.msg').textContent = msg;
       const done = (v) => { wrap.remove(); document.removeEventListener('keydown', key); resolve(v); };
-      const key = (e) => { if (e.key === 'Escape') done(false); };
+      const key = (e) => {
+        if (e.key === 'Escape') done(input ? null : false);
+        if (e.key === 'Enter' && e.target.classList?.contains('typed')) wrap.querySelector('[data-a="1"]')?.click();
+      };
       wrap.addEventListener('click', (e) => {
         const b = e.target.closest('[data-a]');
         if (!b) return;
         if (b.dataset.a === '1' && typed && wrap.querySelector('.typed').value.trim() !== typed) return toast(`Shkruani ${typed}`);
+        if (input) return done(b.dataset.a === '1' ? wrap.querySelector('.typed').value.trim() : null);
         done(b.dataset.a === '1');
       });
       document.addEventListener('keydown', key);
@@ -262,7 +266,7 @@
       `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
 
     $app.innerHTML = `${demoBanner()}
-    <div class="card photo-card no-print" ${photoOk ? '' : 'hidden'}>
+    <div class="card photo-card no-print">
       <div class="row"><div style="flex:1;min-width:220px"><h2 style="margin:0 0 4px">📷 Lexo raportin nga foto</h2>
         <p class="note" style="margin:0">Bëni foto ekranit të Excel-it, fletës së shkruar me dorë ose numratorëve të pompave. Sistemi i lexon numrat dhe jua tregon para se t'i vendosë në raport.</p></div>
         <label class="btn primary">Zgjidh foton<input type="file" id="photo" accept="image/jpeg,image/png,image/webp" hidden></label></div>
@@ -301,6 +305,7 @@
               <td class="num" data-c="value"></td></tr>`).join('')}</tbody>
             <tfoot><tr><td colspan="3">Totali karburant</td><td class="num" id="tot-l"></td><td></td><td class="num" id="tot-fuel"></td></tr></tfoot>
           </table></div>
+          <button class="btn small no-print" data-act="add-pump" style="margin-top:6px">+ Shto pistoletë ose artikull</button>
 
           <h3>Shitje të tjera (Adblu, Vajra, të tjera)</h3>
           <div class="scroll"><table id="t-extras">
@@ -624,6 +629,7 @@
       case 'delete':
         if (!(await ask('Ta fshij këtë raport?'))) return;
         S.reports = S.reports.filter((r) => r.id !== draft.id); save(); openDraft(draft.date, draft.shift); toast('Raporti u fshi'); return renderReport();
+      case 'add-pump': return addPumpDialog();
       case 'add-extra': draft.extras.push({ id: uid(), productId: null, name: '', qty: null, price: null, value: null }); dirty = true; return renderReport();
       case 'del-extra': draft.extras.splice(i, 1); dirty = true; return renderReport();
       case 'add-exp': draft.expenses.push({ desc: '', value: null }); dirty = true; renderReport();
@@ -694,19 +700,81 @@
       <button class="btn small" data-act="demo-reset">Rifillo demon</button></div>`;
   }
 
+  // ---------- new pumps and products ----------
+  const norm = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9ë ç]/g, '').replace(/\s+/g, '');
+  function findProduct(name) {
+    const n = norm(name);
+    return n ? S.products.find((p) => norm(p.name) === n) : null;
+  }
+  function ensureProduct(name, price, metered) {
+    let p = findProduct(name);
+    if (!p) {
+      p = { id: uid(), name: String(name).trim(), price: price ?? null, unit: metered ? 'L' : 'copë', metered, stockStart: 0 };
+      S.products.push(p);
+    }
+    return p;
+  }
+  // Adds a pump to the settings and a matching row to the open report.
+  function addPump(name, prod, start = null) {
+    const pm = { id: uid(), name: name || `${prod.name} – ${S.pumps.filter((x) => x.productId === prod.id).length + 1}`, productId: prod.id, price: null };
+    S.pumps.push(pm);
+    draft.rows.push({ pumpId: pm.id, name: pm.name, productId: prod.id, start: start ?? previousEnd(pm.id, draft.date, draft.shift), end: null, price: pumpPrice(pm) });
+    return draft.rows.length - 1;
+  }
+  async function addPumpDialog() {
+    const opts = S.products.map((p) => `<option value="${p.id}">${esc(p.name)}${p.metered ? '' : ' (pa pistoletë)'}</option>`).join('');
+    const html = `<div class="form">
+      <label>Produkti<select id="np-prod">${opts}<option value="new">+ Produkt i ri…</option></select></label>
+      <div id="np-new" hidden class="form">
+        <label>Emri i produktit<input type="text" id="np-pname" placeholder="p.sh. Benzine 98"></label>
+        <label>Çmimi<input type="text" id="np-price" inputmode="decimal" placeholder="p.sh. 190"></label>
+        <label class="check"><input type="checkbox" id="np-metered" checked> Ka pistoletë me numrator (litra)</label>
+      </div>
+      <label>Emri i pistoletës (bosh = vendoset vetë)<input type="text" id="np-name" placeholder="p.sh. Benzine – 3"></label>
+    </div>`;
+    const vals = {};
+    const p = ask('Shto pistoletë ose artikull të ri', { ok: 'Shto', html });
+    const sel = document.getElementById('np-prod');
+    const sync = () => {
+      document.getElementById('np-new').hidden = sel.value !== 'new';
+      Object.assign(vals, { prod: sel.value, pname: document.getElementById('np-pname').value, price: document.getElementById('np-price').value,
+        metered: document.getElementById('np-metered').checked, name: document.getElementById('np-name').value });
+    };
+    document.querySelector('.dialog').addEventListener('input', sync);
+    document.querySelector('.dialog').addEventListener('change', sync);
+    sync();
+    if (!(await p)) return;
+    let prod;
+    if (vals.prod === 'new') {
+      if (!vals.pname.trim()) return toast('Shkruani emrin e produktit');
+      prod = ensureProduct(vals.pname, num(vals.price), vals.metered);
+    } else prod = product(vals.prod);
+    if (prod.metered) addPump(vals.name.trim(), prod);
+    else draft.extras.push({ id: uid(), productId: prod.id, name: prod.name, qty: null, price: prod.price || null, value: null });
+    save(); dirty = true; renderReport();
+    toast(prod.metered ? 'Pistoleta u shtua. Ruhet edhe te Cilësimet.' : 'Artikulli u shtua te Shitje të tjera');
+  }
+
   // ---------- reading a report from a photo ----------
-  let photoOk = false;
-  (async () => {
+  // Two ways to reach Claude: inside the claude.ai viewer the `sample` capability (the viewer's
+  // own account); on the website the /api/lexo-foto edge function (the station's API key).
+  async function photoReader() {
     const sample = await cap('sample');
     const lim = sample ? await sample.limits().catch(() => null) : null;
-    photoOk = !!lim?.images;
-    document.querySelectorAll('.photo-card').forEach((c) => { c.hidden = !photoOk; });
-  })();
+    if (lim?.images) return { kind: 'sample', sample };
+    if (inViewer || DEMO || location.protocol === 'file:') return null;
+    try {
+      const r = await fetch('/api/lexo-foto', { cache: 'no-store' });
+      const j = r.ok ? await r.json() : null;
+      if (j?.configured) return { kind: 'server', pin: j.pin };
+    } catch (e) { /* not deployed */ }
+    return null;
+  }
 
   function photoPrompt() {
     const pumps = draft.rows.map((r, i) => `${i}: ${r.name} (produkti: ${product(r.productId)?.name || '?'})`).join('\n');
     const others = S.products.filter((p) => !p.metered).map((p) => p.name).join(', ') || 'asnjë';
-    return `Fotoja tregon një raport ditor shitjesh nga një pikë karburanti në Shqipëri. Mund të jetë ekran Excel-i, fletë e shkruar me dorë, ose numratorët (totalizatorët) e pompave.
+    return `Fotoja tregon një raport ditor shitjesh nga një pikë karburanti në Shqipëri. Mund të jetë ekran Excel-i (ndoshta i fotografuar në pjerrësi), fletë e shkruar me dorë, ose numratorët (totalizatorët) e pompave.
 
 Lexo numrat me shumë kujdes, shifër për shifër. Zakonisht presja ndan mijëshet dhe pika dhjetoret (34,888.10 = 34888.1); në shkrim dore mund të jetë e kundërta, gjyko nga konteksti.
 
@@ -715,83 +783,157 @@ Kolonat e zakonshme: "Emertimi" (pistoleta/produkti), "FILLIMI" ose "Ora 06.00" 
 Pistoletat në sistem, me radhë (index: emri):
 ${pumps}
 
-Lidh çdo rresht të fotos me pistoletën e duhur: i njëjti produkt, sipas radhës (D2 e parë në foto → pistoleta e parë D2, e dyta → e dyta, etj.). Mos e përdor dy herë të njëjtin index. Rreshtat pa numra mos i përfshi.
-Produkte pa pistoletë (shitje të tjera): ${others}.
+Lidh çdo rresht të fotos me pistoletën e duhur: i njëjti produkt, sipas radhës (D2 e parë në foto → pistoleta e parë D2, e dyta → e dyta, etj.). Mos e përdor dy herë të njëjtin index.
+Nëse në foto ka një rresht me numra që nuk ka pistoletë përkatëse në listë (p.sh. një pistoletë e tretë Benzine), vendos "index": null dhe shkruaj produktin te "product". Rreshtat pa asnjë numër mos i përfshi.
+Produkte pa pistoletë (shitje të tjera): ${others}. Shitje të tjera me emër të ri përfshiji gjithashtu.
 
 Përgjigju VETËM me një objekt JSON në këtë formë:
 {"date": "YYYY-MM-DD" ose null, "employee": "emri" ose null,
- "rows": [{"index": 0, "label": "si shkruhet në foto", "start": 34800.4, "end": 34888.1, "price": 215}],
+ "rows": [{"index": 0, "product": "Benz100", "label": "si shkruhet në foto", "start": 34800.4, "end": 34888.1, "price": 215}],
  "extras": [{"name": "Adblu", "qty": 1, "price": 600, "value": 600}],
  "expenses": [{"desc": "BANKE", "value": 11700}],
  "unclear": "shkurt, në shqip: çfarë nuk lexohej qartë, ose bosh"}
 Çdo numër që nuk lexohet me siguri vendose null. Mos llogarit litra apo vlera vetë.`;
   }
 
+  // Phone photos are large; a 2000px JPEG keeps the request small and the digits readable.
+  async function shrink(file) {
+    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    const k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.88));
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let bin = '';
+    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+  function parseJsonLoose(text) {
+    const a = text.indexOf('{'); const b = text.lastIndexOf('}');
+    if (a < 0 || b < a) throw { code: 'invalid_json' };
+    try { return JSON.parse(text.slice(a, b + 1)); } catch (e) { throw { code: 'invalid_json' }; }
+  }
+  const PIN_KEY = 'erso-karburant-pin';
+  async function getPin() {
+    let pin = '';
+    try { pin = localStorage.getItem(PIN_KEY) || ''; } catch (e) { /* private window */ }
+    return pin || (await ask('Shkruani kodin (PIN) për leximin e fotove.', { ok: 'Vazhdo', input: 'PIN' })) || null;
+  }
+  async function askServer(pin, file, signal) {
+    const image = await shrink(file);
+    const r = await fetch('/api/lexo-foto', { method: 'POST', signal, headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ pin, image, mediaType: 'image/jpeg', prompt: photoPrompt() }) });
+    const j = await r.json().catch(() => ({ error: 'upstream_error' }));
+    if (j.error === 'bad_pin') { try { localStorage.removeItem(PIN_KEY); } catch (e) { /* ignore */ } throw { code: 'bad_pin' }; }
+    if (j.error) throw { code: j.error };
+    if (pin) { try { localStorage.setItem(PIN_KEY, pin); } catch (e) { /* ignore */ } }
+    return parseJsonLoose(j.text || '');
+  }
+
   async function readPhoto(file) {
     if (!file) return;
-    const sample = await cap('sample');
-    if (!sample) return toast('Leximi i fotos nuk është i disponueshëm këtu');
+    const reader = await photoReader();
+    if (!reader) {
+      const msg = inViewer || DEMO
+        ? 'Leximi i fotos punon kur demoja hapet brenda claude.ai me llogarinë tuaj. Hyni në claude.ai në këtë shfletues dhe hapeni lidhjen përsëri.'
+        : 'Leximi i fotos nuk është aktivizuar ende në këtë faqe. Duhet vendosur çelësi i Anthropic te Netlify (shih udhëzimet te NETLIFY.md, seksioni 6). Deri atëherë numrat shkruhen me dorë.';
+      return ask(msg, { ok: 'Mirë', cancel: null });
+    }
+    const pin = reader.kind === 'server' && reader.pin ? await getPin() : '';
+    if (pin === null) return;
     const ctl = new AbortController();
     const wait = ask('Po lexoj foton… Zakonisht zgjat 20–60 sekonda.', { ok: null, cancel: 'Ndalo', html: '<div class="spinner"></div>' });
-    wait.then(() => ctl.abort());
+    const closeWait = ask.close;
+    let stopped = false;
+    wait.then(() => { stopped = true; ctl.abort(); });
     let data;
     try {
-      data = await sample.json(photoPrompt(), { images: [file], signal: ctl.signal, modelTier: 'default' });
+      data = reader.kind === 'sample'
+        ? await reader.sample.json(photoPrompt(), { images: [file], signal: ctl.signal, modelTier: 'default' })
+        : await askServer(pin, file, ctl.signal);
     } catch (e) {
-      ask.close?.();
-      if (e.code === 'cancelled') return;
-      const why = { not_granted: 'Nuk u dha leje për leximin e fotos.', rate_limited: 'Shumë kërkesa. Provoni pas pak.', image_rejected: 'Fotoja nuk u pranua. Provoni JPG ose PNG më të vogël.', invalid_json: 'Fotoja nuk u lexua dot. Provoni një foto më të qartë dhe më afër.', refused: 'Fotoja nuk u lexua dot.' }[e.code] || 'Leximi dështoi. Provoni përsëri.';
-      if (e.code === 'not_granted' || e.code === 'sampling_disabled') document.querySelectorAll('.photo-card').forEach((c) => { c.hidden = true; });
+      if (!stopped) closeWait();
+      if (e?.code === 'cancelled' || e?.name === 'AbortError') return;
+      const why = {
+        not_granted: 'Nuk u dha leje për leximin e fotos. Hapeni faqen përsëri dhe zgjidhni "Lejo".',
+        sampling_disabled: 'Leximi i fotos nuk është i disponueshëm për këtë llogari.',
+        rate_limited: 'Shumë kërkesa njëherësh. Provoni pas pak minutash.',
+        image_rejected: 'Fotoja nuk u pranua. Provoni një foto JPG ose PNG.',
+        invalid_json: 'Fotoja nuk u lexua dot. Provoni një foto më të qartë, më afër dhe pa reflekse.',
+        refused: 'Fotoja nuk u lexua dot.',
+        bad_pin: 'Kodi (PIN) është i gabuar. Provoni përsëri.',
+        not_configured: 'Leximi i fotos nuk është aktivizuar ende në këtë faqe.',
+        too_large: 'Fotoja është shumë e madhe.',
+      }[e?.code] || 'Leximi dështoi. Kontrolloni internetin dhe provoni përsëri.';
       return ask(why, { ok: 'Mirë', cancel: null });
     }
-    ask.close?.();
+    if (!stopped) closeWait();
     showPhotoResult(data || {});
   }
 
   function showPhotoResult(data) {
     const n = (v) => (typeof v === 'number' ? v : num(v));
     const used = new Set();
-    const rows = (Array.isArray(data.rows) ? data.rows : []).map((r) => ({ ...r, index: Number.isInteger(r.index) ? r.index : -1, start: n(r.start), end: n(r.end), price: n(r.price) }))
-      .filter((r) => r.index >= 0 && r.index < draft.rows.length && !used.has(r.index) && used.add(r.index));
-    const extras = (Array.isArray(data.extras) ? data.extras : []).map((x) => ({ name: String(x.name || ''), qty: n(x.qty), price: n(x.price), value: n(x.value) }))
-      .filter((x) => x.qty != null || x.value != null);
+    const all = (Array.isArray(data.rows) ? data.rows : []).map((r) => ({
+      index: Number.isInteger(r.index) && r.index >= 0 && r.index < draft.rows.length ? r.index : null,
+      product: String(r.product || r.label || '').trim(), label: String(r.label || '').trim(),
+      start: n(r.start), end: n(r.end), price: n(r.price),
+    })).filter((r) => r.start != null || r.end != null);
+    for (const r of all) { if (r.index != null && used.has(r.index)) r.index = null; if (r.index != null) used.add(r.index); }
+    const rows = all.filter((r) => r.index != null);
+    const fresh = all.filter((r) => r.index == null && r.product);
+    const extras = (Array.isArray(data.extras) ? data.extras : []).map((x) => ({ name: String(x.name || '').trim(), qty: n(x.qty), price: n(x.price), value: n(x.value) }))
+      .filter((x) => x.name && (x.qty != null || x.value != null));
     const expenses = (Array.isArray(data.expenses) ? data.expenses : []).map((x) => ({ desc: String(x.desc || ''), value: n(x.value) })).filter((x) => x.desc || x.value != null);
-    if (!rows.length && !extras.length && !expenses.length) return ask('Në foto nuk u gjetën numra që mund të lexohen. Provoni një foto më të qartë.', { ok: 'Mirë', cancel: null });
+    if (!rows.length && !fresh.length && !extras.length && !expenses.length) return ask('Në foto nuk u gjetën numra që mund të lexohen. Provoni një foto më të qartë.', { ok: 'Mirë', cancel: null });
 
+    const liters = (r) => (r.start != null && r.end != null ? round2(r.end - r.start) : null);
+    const line = (name, r, badge) => { const l = liters(r);
+      return `<tr><td>${esc(name)}${badge}</td><td class="muted">${esc(r.label)}</td><td class="num">${fmt(r.start)}</td><td class="num">${fmt(r.end)}</td>
+        <td class="num ${l < 0 ? 'neg' : ''}">${fmt(l)}</td><td class="num">${fmt(r.price, 0)}</td></tr>`; };
+    const newExtras = extras.filter((x) => !findProduct(x.name));
     const table = `<div class="scroll"><table>
       <thead><tr><th>Pistoleta</th><th>Në foto</th><th class="num">Fillimi</th><th class="num">Fundi</th><th class="num">Litra</th><th class="num">Çmimi</th></tr></thead>
-      <tbody>${rows.map((r) => { const l = r.start != null && r.end != null ? round2(r.end - r.start) : null;
-        return `<tr><td>${esc(draft.rows[r.index].name)}</td><td class="muted">${esc(r.label || '')}</td><td class="num">${fmt(r.start)}</td><td class="num">${fmt(r.end)}</td>
-        <td class="num ${l < 0 ? 'neg' : ''}">${fmt(l)}</td><td class="num">${fmt(r.price, 0)}</td></tr>`; }).join('')}</tbody></table></div>
-      ${extras.length ? `<h3>Shitje të tjera</h3><table><tbody>${extras.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${fmt(x.qty, 0)}</td><td class="num">${fmt(x.price)}</td><td class="num">${fmt(x.value ?? (x.qty != null && x.price != null ? x.qty * x.price : null))}</td></tr>`).join('')}</tbody></table>` : ''}
+      <tbody>${rows.map((r) => line(draft.rows[r.index].name, r, '')).join('')}
+        ${fresh.map((r) => line(r.product, r, ' <span class="badge new">E re</span>')).join('')}</tbody></table></div>
+      ${fresh.length ? `<p class="note">"E re": pistoleta që nuk ekziston ende në sistem. Do të shtohet vetë${fresh.some((r) => !findProduct(r.product)) ? ', bashkë me produktin e ri' : ''}.</p>` : ''}
+      ${extras.length ? `<h3>Shitje të tjera</h3><table><tbody>${extras.map((x) => `<tr><td>${esc(x.name)}${findProduct(x.name) ? '' : ' <span class="badge new">E re</span>'}</td><td class="num">${fmt(x.qty, 0)}</td><td class="num">${fmt(x.price)}</td><td class="num">${fmt(x.value ?? (x.qty != null && x.price != null ? x.qty * x.price : null))}</td></tr>`).join('')}</tbody></table>` : ''}
       ${expenses.length ? `<h3>Shpenzime</h3><table><tbody>${expenses.map((x) => `<tr><td>${esc(x.desc)}</td><td class="num">${fmt(x.value)}</td></tr>`).join('')}</tbody></table>` : ''}
       ${data.unclear ? `<div class="warnbox">${esc(data.unclear)}</div>` : ''}
-      ${rows.some((r) => r.start != null && r.end != null && r.end < r.start) ? '<div class="warnbox">Disa rreshta kanë "Fundi" më të vogël se "Fillimi". Kontrollojini pasi t\'i vendosni.</div>' : ''}
+      ${all.some((r) => r.start != null && r.end != null && r.end < r.start) ? '<div class="warnbox">Disa rreshta kanë "Fundi" më të vogël se "Fillimi". Kontrollojini pasi t\'i vendosni.</div>' : ''}
       <label class="check"><input type="checkbox" id="ph-start" checked> Vendos edhe "Fillimin" nga fotoja (përndryshe mbetet nga turni i mëparshëm)</label>
       <label class="check"><input type="checkbox" id="ph-price" checked> Vendos edhe çmimet nga fotoja</label>`;
-    const msg = `U lexuan ${rows.length} pistoleta${expenses.length ? `, ${expenses.length} shpenzime` : ''}. Kontrolloni numrat me foton para se t'i vendosni.`;
+    const parts = [`${rows.length + fresh.length} pistoleta`];
+    if (fresh.length + newExtras.length) parts.push(`${fresh.length + newExtras.length} artikuj të rinj`);
+    if (expenses.length) parts.push(`${expenses.length} shpenzime`);
+    const msg = `U lexuan ${parts.join(', ')}. Kontrolloni numrat me foton para se t'i vendosni.`;
     let useStart = true, usePrice = true;
     const p = ask(msg, { ok: 'Vendos në raport', html: table, wide: true });
     document.getElementById('ph-start')?.addEventListener('change', (e) => { useStart = e.target.checked; });
     document.getElementById('ph-price')?.addEventListener('change', (e) => { usePrice = e.target.checked; });
     p.then((yes) => {
       if (!yes) return;
-      for (const r of rows) {
-        const row = draft.rows[r.index];
+      const put = (row, r) => {
         if (useStart && r.start != null) row.start = r.start;
         if (r.end != null) row.end = r.end;
         if (usePrice && r.price != null) row.price = r.price;
+      };
+      for (const r of rows) put(draft.rows[r.index], r);
+      for (const r of fresh) {
+        const prod = ensureProduct(r.product, r.price, true);
+        put(draft.rows[addPump('', prod, r.start)], r);
       }
       for (const x of extras) {
-        const prod = S.products.find((pp) => pp.name.toLowerCase() === x.name.toLowerCase());
-        const slot = draft.extras.find((e) => prod && e.productId === prod.id && e.qty == null && e.value == null);
+        const prod = ensureProduct(x.name, x.price, false);
+        const slot = draft.extras.find((e) => e.productId === prod.id && e.qty == null && e.value == null);
         const val = x.qty != null && x.price != null ? null : x.value;
         if (slot) Object.assign(slot, { qty: x.qty, price: x.price ?? slot.price, value: val });
-        else draft.extras.push({ id: uid(), productId: prod?.id || null, name: x.name, qty: x.qty, price: x.price, value: val });
+        else draft.extras.push({ id: uid(), productId: prod.id, name: prod.name, qty: x.qty, price: x.price ?? prod.price, value: val });
       }
       draft.expenses = draft.expenses.filter((x) => x.desc || x.value != null).concat(expenses);
       if (!draft.employee && data.employee) draft.employee = String(data.employee);
-      dirty = true; renderReport(); toast('Numrat u vendosën. Kontrollojini dhe shtypni "Ruaj raportin".');
+      save(); dirty = true; renderReport(); toast('Numrat u vendosën. Kontrollojini dhe shtypni "Ruaj raportin".');
     });
   }
 

@@ -84,3 +84,8 @@ td.neg,.neg{color:var(--accent);font-weight:700}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}}
 .photo-card{border-color:var(--accent);background:linear-gradient(0deg,var(--panel),var(--accent-soft))}
 .demo{background:#fff7e0;border:1px solid #f0d58a;color:#6b4e00;border-radius:var(--r);padding:8px 12px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.form{display:flex;flex-direction:column;gap:10px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.form label.check{flex-direction:row;color:var(--text)}
+.form input[type=text],.form select{font-size:14px;color:var(--text)}
+.badge.new{background:#e6f0ff;color:#1d4ed8}

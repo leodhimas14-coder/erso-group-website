@@ -61,3 +61,16 @@ Hapni `https://adresa-juaj/karburant/` (faqja nuk shfaqet në Google dhe nuk lid
 - **Çmimet & Cilësimet:** ndryshoni ose fshini çmimet, produktet, pistoletat dhe turnet. Raportet e ruajtura e mbajnë çmimin e vjetër.
 - **Gjendja:** gjendja e depozitave dhe furnizimet.
 - **Kujdes:** të dhënat ruhen në shfletuesin e kompjuterit ku punoni. Shkarkoni kopjen rezervë çdo javë.
+
+## 6. Leximi i raportit nga foto (një herë, rreth 5 minuta)
+
+Butoni **"Zgjidh foton"** te `/karburant/` e dërgon foton te Claude, që lexon numrat dhe i vendos te vendi i tyre. Për ta aktivizuar:
+
+1. Hyni në https://platform.claude.com, krijoni llogari dhe shtoni një kartë pagese (paguhet sipas përdorimit, zakonisht disa cent për foto).
+2. Te **API Keys → Create Key** krijoni një çelës dhe kopjojeni.
+3. Në Netlify: **Site configuration → Environment variables → Add a variable**:
+   - `ANTHROPIC_API_KEY` = çelësi që kopjuat
+   - `KARBURANT_PIN` = një kod që e dinë vetëm punonjësit (p.sh. `4821`). Pa këtë kod, kushdo që e gjen adresën mund ta përdorë çelësin tuaj.
+4. **Deploys → Trigger deploy**. Herën e parë që punonjësi zgjedh një foto, i kërkohet kodi. Pastaj shfletuesi e mban mend.
+
+Pistoletat ose artikujt që fotoja i ka, por sistemi jo, shtohen vetë. Mund t'i shtoni edhe me dorë me **"+ Shto pistoletë ose artikull"**.
