@@ -52,3 +52,12 @@ Hyjnë vetëm llogaritë GitHub që kanë të drejtë shkrimi në repo. Për t'i
 - **Foto pas dorëzimit në Shqipëri** (me lejen e klientit) janë dëshmia më e fortë.
 - **Shkruani të dhëna konkrete:** modelin, fuqinë, përmasat, garancinë dhe afatin e dorëzimit.
 - Fotot mund t'i ngarkoni direkt nga telefoni. Netlify i zvogëlon automatikisht që faqja të hapet shpejt.
+
+## 5. Raporti ditor i karburantit
+
+Hapni `https://adresa-juaj/karburant/` (faqja nuk shfaqet në Google dhe nuk lidhet nga faqja kryesore).
+
+- **Raporti:** zgjidhni datën, turnin dhe punonjësin. "Fillimi" i çdo pistolete merret vetë nga "Fundi" i turnit të mëparshëm. Shkruani "Fundi"; litrat (fundi − fillimi), vlera (litra × çmimi) dhe totalet dalin vetë. Shtoni shpenzimet ditore dhe shtypni **Ruaj raportin**.
+- **Çmimet & Cilësimet:** ndryshoni ose fshini çmimet, produktet, pistoletat dhe turnet. Raportet e ruajtura e mbajnë çmimin e vjetër.
+- **Gjendja:** gjendja e depozitave dhe furnizimet.
+- **Kujdes:** të dhënat ruhen në shfletuesin e kompjuterit ku punoni. Shkarkoni kopjen rezervë çdo javë.
