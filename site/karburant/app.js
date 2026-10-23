@@ -4,7 +4,8 @@
 (function () {
   'use strict';
 
-  const KEY = 'erso-karburant-v1';
+  const DEMO = !!window.KARBURANT_DEMO;
+  const KEY = DEMO ? 'erso-karburant-demo' : 'erso-karburant-v1';
   const $app = document.getElementById('app');
 
   // ---------- helpers ----------
@@ -31,11 +32,50 @@
     t.textContent = msg; t.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => { t.hidden = true; }, 2200);
   }
-  function download(name, text, type) {
+  // Claude viewer capabilities (photo reading, downloads) exist only when the page runs as a
+  // claude.ai artifact; on the normal website `cap()` resolves null and the plain fallbacks run.
+  const caps = {};
+  const cap = (name) => (caps[name] ||= (window.claude?.use ? window.claude.use(name).catch(() => null) : Promise.resolve(null)));
+  const inViewer = !!window.claude?.use;
+
+  async function download(name, text, type) {
+    const dl = await cap('downloads');
+    if (dl) {
+      try { await dl.save({ filename: name, data: text }); toast('Skedari u shkarkua'); }
+      catch (e) { if (e.code !== 'declined') toast('Shkarkimi nuk funksionon këtu'); }
+      return;
+    }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([text], { type }));
     a.download = name; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // In-page replacement for confirm(): the claude.ai viewer blocks native dialogs.
+  // `typed` asks the user to type a word first; `cancel: null` makes it a plain notice.
+  function ask(msg, { ok = 'Po', cancel = 'Anulo', danger = false, typed = null, html = null, wide = false } = {}) {
+    return new Promise((resolve) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'modal';
+      wrap.innerHTML = `<div class="dialog${wide ? ' wide' : ''}" role="dialog" aria-modal="true">
+        <div class="msg"></div>${html || ''}
+        ${typed ? `<input type="text" class="typed" placeholder="${esc(typed)}" autocomplete="off">` : ''}
+        <div class="row end">${cancel ? `<button class="btn" data-a="0">${esc(cancel)}</button>` : ''}
+        ${ok ? `<button class="btn ${danger ? 'danger' : 'primary'}" data-a="1">${esc(ok)}</button>` : ''}</div></div>`;
+      wrap.querySelector('.msg').textContent = msg;
+      const done = (v) => { wrap.remove(); document.removeEventListener('keydown', key); resolve(v); };
+      const key = (e) => { if (e.key === 'Escape') done(false); };
+      wrap.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-a]');
+        if (!b) return;
+        if (b.dataset.a === '1' && typed && wrap.querySelector('.typed').value.trim() !== typed) return toast(`Shkruani ${typed}`);
+        done(b.dataset.a === '1');
+      });
+      document.addEventListener('keydown', key);
+      document.body.appendChild(wrap);
+      (wrap.querySelector('.typed') || wrap.querySelector('[data-a="1"]') || wrap.querySelector('[data-a]'))?.focus();
+      ask.close = () => done(false);
+    });
   }
   // CSV with ";" and a BOM so Excel opens it with the right columns and Albanian letters.
   function csv(rows) {
@@ -65,17 +105,52 @@
       deliveries: [],
     };
   }
+  // Demo: five days of invented shifts so every screen has something to show.
+  function demoState() {
+    const s = defaults();
+    let seed = 7;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    const base = { 'Benz100': 60, 'Benzine': 90, 'D1 G': 70, 'D2': 160, 'Gaz': 180 };
+    const meters = [34800.4, 139500.49, 87760.15, 331300.73, 442500.2, 160200.61, 232100.45, 69000.44, 553000.53, 923100.98, 485700.83, 341300.39];
+    const people = ['Punonjës shembull A', 'Punonjës shembull B'];
+    const costs = [['BANKE', 11700], ['Furnitor buke', 1200], ['Pastrim', 2000], ['Rimbursim klienti', 3500], ['Telefon', 1000]];
+    const pn = (id) => s.products.find((p) => p.id === id).name;
+    const day = new Date();
+    for (let k = 5; k >= 1; k--) {
+      const d = new Date(day); d.setDate(d.getDate() - k);
+      for (const sh of s.shifts) {
+        const rows = s.pumps.map((pm, i) => {
+          const start = meters[i];
+          const end = round2(start + base[pn(pm.productId)] * (0.4 + rnd()));
+          meters[i] = end;
+          return { pumpId: pm.id, name: pm.name, productId: pm.productId, start, end, price: pumpPrice(pm, s) };
+        });
+        const ad = s.products.find((p) => p.name === 'Adblu');
+        const exp = costs.filter(() => rnd() < 0.35).map(([desc, value]) => ({ desc, value }));
+        s.reports.push({ id: uid(), date: localDate(d), shift: sh.id, employee: people[shiftIdxIn(s, sh.id) % 2], note: 'Shembull',
+          rows, extras: rnd() < 0.6 ? [{ id: uid(), productId: ad.id, name: 'Adblu', qty: 1 + Math.floor(rnd() * 3), price: ad.price, value: null }] : [], expenses: exp });
+      }
+    }
+    const stocks = { 'Benz100': 1500, 'Benzine': 2500, 'D1 G': 2000, 'D2': 6000, 'Gaz': 5000, 'Adblu': 40, 'Vajra': 52 };
+    s.products.forEach((p) => { p.stockStart = stocks[p.name] || 0; });
+    const d2 = s.products.find((p) => p.name === 'D2');
+    const dd = new Date(day); dd.setDate(dd.getDate() - 3);
+    s.deliveries.push({ id: uid(), date: localDate(dd), productId: d2.id, qty: 4000, note: 'Shembull: cisternë' });
+    s.demo = true;
+    return s;
+  }
+  function shiftIdxIn(s, id) { return s.shifts.findIndex((x) => x.id === id); }
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY));
       if (s && Array.isArray(s.products)) return { ...defaults(), ...s };
     } catch (e) { /* fall through */ }
-    return defaults();
+    return DEMO ? demoState() : defaults();
   }
   let S = load();
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(S)); }
-    catch (e) { alert('Të dhënat nuk u ruajtën në këtë shfletues: ' + e.message); }
+    catch (e) { toast('Të dhënat nuk u ruajtën në këtë shfletues: ' + e.message); }
   }
   const product = (id) => S.products.find((p) => p.id === id);
   const shiftIdx = (id) => { const i = S.shifts.findIndex((s) => s.id === id); return i < 0 ? 99 : i; };
@@ -137,9 +212,9 @@
     }
     return null;
   }
-  function pumpPrice(pump) {
+  function pumpPrice(pump, st = S) {
     if (pump.price != null) return pump.price;
-    return product(pump.productId)?.price ?? null;
+    return st.products.find((p) => p.id === pump.productId)?.price ?? null;
   }
   function newDraft(date, shift) {
     return {
@@ -186,7 +261,12 @@
     const productOpts = (sel) => `<option value="">— tjetër —</option>` + S.products.map((p) =>
       `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
 
-    $app.innerHTML = `
+    $app.innerHTML = `${demoBanner()}
+    <div class="card photo-card no-print" ${photoOk ? '' : 'hidden'}>
+      <div class="row"><div style="flex:1;min-width:220px"><h2 style="margin:0 0 4px">📷 Lexo raportin nga foto</h2>
+        <p class="note" style="margin:0">Bëni foto ekranit të Excel-it, fletës së shkruar me dorë ose numratorëve të pompave. Sistemi i lexon numrat dhe jua tregon para se t'i vendosë në raport.</p></div>
+        <label class="btn primary">Zgjidh foton<input type="file" id="photo" accept="image/jpeg,image/png,image/webp" hidden></label></div>
+    </div>
     <div class="card">
       <div class="print-only"><h2>RAPORTI DITOR I SHITJEVE</h2></div>
       <div class="row">
@@ -197,7 +277,7 @@
         <div class="row no-print">
           <button class="btn primary" data-act="save">💾 Ruaj raportin</button>
           <button class="btn" data-act="prices" title="Vendos çmimet aktuale te ky raport">Çmimet aktuale</button>
-          <button class="btn" data-act="print">🖨 Printo</button>
+          ${inViewer ? '' : '<button class="btn" data-act="print">🖨 Printo</button>'}
           <button class="btn" data-act="csv">⬇ Excel (CSV)</button>
           ${d.id ? '<button class="btn danger" data-act="delete">Fshi raportin</button>' : ''}
         </div>
@@ -293,11 +373,11 @@
     const dd = document.getElementById('dirty'); if (dd) dd.textContent = dirty ? ' • Ka ndryshime të paruajtura' : '';
   }
 
-  function saveDraft() {
+  async function saveDraft() {
     const d = draft;
     if (!d.date || !d.shift) return toast('Zgjidhni datën dhe turnin');
     const clash = S.reports.find((r) => r.date === d.date && r.shift === d.shift && r.id !== d.id);
-    if (clash && !confirm('Ka një raport tjetër për këtë datë dhe turn. Ta zëvendësoj?')) return;
+    if (clash && !(await ask('Ka një raport tjetër për këtë datë dhe turn. Ta zëvendësoj?'))) return;
     if (clash) S.reports = S.reports.filter((r) => r !== clash);
     d.expenses = d.expenses.filter((x) => x.desc || x.value != null);
     d.extras = d.extras.filter((x) => x.qty != null || x.value != null);
@@ -387,7 +467,7 @@
     for (const r of reps) for (const x of r.expenses) { const k = (x.desc || '—').trim(); expByDesc[k] = round2((expByDesc[k] || 0) + (x.value || 0)); }
     $app.innerHTML = `<div class="card"><div class="row"><h2 style="margin:0;flex:1">Përmbledhje mujore</h2>
       <div class="field"><label>Muaji</label><input type="month" id="m-month" value="${month}"></div>
-      <button class="btn" data-act="print">🖨 Printo</button></div>
+      ${inViewer ? '' : '<button class="btn" data-act="print">🖨 Printo</button>'}</div>
       <div class="totals" style="margin-top:12px">
         <div class="stat"><div class="k">Shitje</div><div class="v">${fmt(sum.sales)}</div></div>
         <div class="stat"><div class="k">Shpenzime</div><div class="v">${fmt(sum.exp)}</div></div>
@@ -464,9 +544,9 @@
   }
 
   // ---------- events ----------
-  document.getElementById('tabs').addEventListener('click', (e) => {
+  document.getElementById('tabs').addEventListener('click', async (e) => {
     const b = e.target.closest('button'); if (!b) return;
-    if (tab === 'raporti' && dirty && b.dataset.tab !== 'raporti' && !confirm('Raporti ka ndryshime të paruajtura. Të largohem pa ruajtur?')) return;
+    if (tab === 'raporti' && dirty && b.dataset.tab !== 'raporti' && !(await ask('Raporti ka ndryshime të paruajtura. Të largohem pa ruajtur?'))) return;
     if (tab === 'raporti' && b.dataset.tab !== 'raporti') draft = null;
     tab = b.dataset.tab; render();
   });
@@ -487,12 +567,13 @@
     dirty = true; recalc();
   });
 
-  $app.addEventListener('change', (e) => {
+  $app.addEventListener('change', async (e) => {
     const el = e.target;
     if (tab === 'raporti') {
+      if (el.id === 'photo') { const f = el.files[0]; el.value = ''; return readPhoto(f); }
       if (el.id === 'r-date' || el.id === 'r-shift') {
         const date = document.getElementById('r-date').value; const shift = document.getElementById('r-shift').value;
-        if (dirty && !confirm('Raporti ka ndryshime të paruajtura. Të vazhdoj pa ruajtur?')) { el.value = el.id === 'r-date' ? draft.date : draft.shift; return; }
+        if (dirty && !(await ask('Raporti ka ndryshime të paruajtura. Të vazhdoj pa ruajtur?'))) { el.value = el.id === 'r-date' ? draft.date : draft.shift; return; }
         if (date) { openDraft(date, shift); renderReport(); }
       } else if (el.dataset.f === 'productId') {
         const x = draft.extras[+el.closest('tr').dataset.i]; const p = product(el.value);
@@ -528,7 +609,7 @@
     if (str) { S.shifts.find((s) => s.id === str.dataset.sid).name = el.value; save(); toast('U ruajt'); }
   });
 
-  $app.addEventListener('click', (e) => {
+  $app.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-act]'); if (!b) return;
     const act = b.dataset.act; const id = b.dataset.id; const i = +b.dataset.i;
     switch (act) {
@@ -541,7 +622,7 @@
         draft.extras.forEach((x) => { const p = product(x.productId); if (p && p.price) x.price = p.price; });
         dirty = true; toast('U vendosën çmimet aktuale'); return renderReport();
       case 'delete':
-        if (!confirm('Ta fshij këtë raport?')) return;
+        if (!(await ask('Ta fshij këtë raport?'))) return;
         S.reports = S.reports.filter((r) => r.id !== draft.id); save(); openDraft(draft.date, draft.shift); toast('Raporti u fshi'); return renderReport();
       case 'add-extra': draft.extras.push({ id: uid(), productId: null, name: '', qty: null, price: null, value: null }); dirty = true; return renderReport();
       case 'del-extra': draft.extras.splice(i, 1); dirty = true; return renderReport();
@@ -550,7 +631,7 @@
       case 'del-exp': draft.expenses.splice(i, 1); dirty = true; return renderReport();
       // history
       case 'open': { const r = S.reports.find((x) => x.id === id); draft = structuredClone(r); dirty = false; tab = 'raporti'; return render(); }
-      case 'h-del': if (confirm('Ta fshij këtë raport?')) { S.reports = S.reports.filter((r) => r.id !== id); save(); renderHistory(); } return;
+      case 'h-del': if (await ask('Ta fshij këtë raport?')) { S.reports = S.reports.filter((r) => r.id !== id); save(); renderHistory(); } return;
       case 'h-all': renderHistory.month = ''; return renderHistory();
       case 'h-csv': return download(`raportet-${renderHistory.month || 'te-gjitha'}.csv`, csv([
         ['Data', 'Turni', 'Punonjësi', 'Shitje karburant', 'Shitje të tjera', 'Totali shitjeve', 'Shpenzime', 'Për dorëzim'],
@@ -563,14 +644,14 @@
         S.deliveries.push({ id: uid(), date: document.getElementById('d-date').value || localDate(), productId: document.getElementById('d-prod').value, qty, note: document.getElementById('d-note').value.trim() });
         save(); toast('Furnizimi u shtua'); return renderStock();
       }
-      case 'd-del': if (confirm('Ta fshij këtë furnizim?')) { S.deliveries = S.deliveries.filter((d) => d.id !== id); save(); renderStock(); } return;
+      case 'd-del': if (await ask('Ta fshij këtë furnizim?')) { S.deliveries = S.deliveries.filter((d) => d.id !== id); save(); renderStock(); } return;
       // settings
       case 'p-add': S.products.push({ id: uid(), name: 'Produkt i ri', price: null, unit: 'L', metered: true, stockStart: 0 }); save(); return renderSettings();
-      case 'p-del': if (confirm('Ta fshij produktin? Raportet e vjetra nuk ndryshojnë.')) { S.products = S.products.filter((p) => p.id !== id); save(); renderSettings(); } return;
+      case 'p-del': if (await ask('Ta fshij produktin? Raportet e vjetra nuk ndryshojnë.')) { S.products = S.products.filter((p) => p.id !== id); save(); renderSettings(); } return;
       case 'ph-del': S.priceHistory = S.priceHistory.filter((h) => h.id !== id); save(); return renderSettings();
       case 'pm-add': { const p = S.products.find((x) => x.metered); if (!p) return toast('Shtoni fillimisht një produkt me pistoletë');
         S.pumps.push({ id: uid(), name: p.name + ' – ' + (S.pumps.filter((x) => x.productId === p.id).length + 1), productId: p.id, price: null }); save(); return renderSettings(); }
-      case 'pm-del': if (confirm('Ta fshij pistoletën? Raportet e vjetra nuk ndryshojnë.')) { S.pumps = S.pumps.filter((p) => p.id !== id); save(); renderSettings(); } return;
+      case 'pm-del': if (await ask('Ta fshij pistoletën? Raportet e vjetra nuk ndryshojnë.')) { S.pumps = S.pumps.filter((p) => p.id !== id); save(); renderSettings(); } return;
       case 'pm-up': case 'pm-down': {
         const j = act === 'pm-up' ? i - 1 : i + 1; if (j < 0 || j >= S.pumps.length) return;
         [S.pumps[i], S.pumps[j]] = [S.pumps[j], S.pumps[i]]; save(); return renderSettings();
@@ -581,28 +662,138 @@
         if (S.reports.some((r) => r.shift === id)) return toast('Ky turn ka raporte të ruajtura');
         S.shifts = S.shifts.filter((s) => s.id !== id); save(); return renderSettings();
       case 'backup': return download(`karburant-kopje-${localDate()}.json`, JSON.stringify(S, null, 1), 'application/json');
+      case 'demo-reset':
+        if (!(await ask('Të rifilloj demon me të dhënat shembull? Ndryshimet tuaja në demo fshihen.'))) return;
+        S = demoState(); save(); draft = null; dirty = false; tab = 'raporti'; return render();
       case 'reset':
-        if (!confirm('Do të fshihen TË GJITHA raportet, çmimet dhe furnizimet. Keni bërë kopje rezervë?')) return;
-        if (prompt('Shkruani FSHI për të konfirmuar') !== 'FSHI') return;
-        S = defaults(); save(); draft = null; return renderSettings();
+        if (!(await ask('Do të fshihen TË GJITHA raportet, çmimet dhe furnizimet. Keni bërë kopje rezervë? Shkruani FSHI për të konfirmuar.', { ok: 'Fshi të gjitha', danger: true, typed: 'FSHI' }))) return;
+        S = DEMO ? demoState() : defaults(); save(); draft = null; return renderSettings();
     }
   });
 
   function restore(file) {
     if (!file) return;
     const fr = new FileReader();
-    fr.onload = () => {
+    fr.onload = async () => {
       try {
         const data = JSON.parse(fr.result);
         if (!Array.isArray(data.products) || !Array.isArray(data.reports)) throw new Error('Skedari nuk është kopje e këtij programi');
-        if (!confirm(`Kopja ka ${data.reports.length} raporte. Të zëvendësoj të dhënat aktuale?`)) return;
+        if (!(await ask(`Kopja ka ${data.reports.length} raporte. Të zëvendësoj të dhënat aktuale?`))) return;
         S = { ...defaults(), ...data }; save(); draft = null; toast('Të dhënat u ngarkuan'); renderSettings();
-      } catch (err) { alert('Ngarkimi dështoi: ' + err.message); }
+      } catch (err) { ask('Ngarkimi dështoi: ' + err.message, { ok: 'Mirë', cancel: null }); }
     };
     fr.readAsText(file);
   }
 
   window.addEventListener('beforeunload', (e) => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  // ---------- demo banner ----------
+  function demoBanner() {
+    if (!DEMO) return '';
+    return `<div class="demo no-print"><b>Demo.</b> Të dhënat janë shembull dhe ruhen vetëm në këtë shfletues. Provoni çdo gjë lirisht.
+      <button class="btn small" data-act="demo-reset">Rifillo demon</button></div>`;
+  }
+
+  // ---------- reading a report from a photo ----------
+  let photoOk = false;
+  (async () => {
+    const sample = await cap('sample');
+    const lim = sample ? await sample.limits().catch(() => null) : null;
+    photoOk = !!lim?.images;
+    document.querySelectorAll('.photo-card').forEach((c) => { c.hidden = !photoOk; });
+  })();
+
+  function photoPrompt() {
+    const pumps = draft.rows.map((r, i) => `${i}: ${r.name} (produkti: ${product(r.productId)?.name || '?'})`).join('\n');
+    const others = S.products.filter((p) => !p.metered).map((p) => p.name).join(', ') || 'asnjë';
+    return `Fotoja tregon një raport ditor shitjesh nga një pikë karburanti në Shqipëri. Mund të jetë ekran Excel-i, fletë e shkruar me dorë, ose numratorët (totalizatorët) e pompave.
+
+Lexo numrat me shumë kujdes, shifër për shifër. Zakonisht presja ndan mijëshet dhe pika dhjetoret (34,888.10 = 34888.1); në shkrim dore mund të jetë e kundërta, gjyko nga konteksti.
+
+Kolonat e zakonshme: "Emertimi" (pistoleta/produkti), "FILLIMI" ose "Ora 06.00" (leximi në fillim = start), "FUNDI" ose "Ora 14.00" (leximi në fund = end), "LITRA", "ÇMIMI" (price), "VLERA". Në të djathtë shpesh ka "Shpenzime Ditore" me përshkrim dhe vlerë.
+
+Pistoletat në sistem, me radhë (index: emri):
+${pumps}
+
+Lidh çdo rresht të fotos me pistoletën e duhur: i njëjti produkt, sipas radhës (D2 e parë në foto → pistoleta e parë D2, e dyta → e dyta, etj.). Mos e përdor dy herë të njëjtin index. Rreshtat pa numra mos i përfshi.
+Produkte pa pistoletë (shitje të tjera): ${others}.
+
+Përgjigju VETËM me një objekt JSON në këtë formë:
+{"date": "YYYY-MM-DD" ose null, "employee": "emri" ose null,
+ "rows": [{"index": 0, "label": "si shkruhet në foto", "start": 34800.4, "end": 34888.1, "price": 215}],
+ "extras": [{"name": "Adblu", "qty": 1, "price": 600, "value": 600}],
+ "expenses": [{"desc": "BANKE", "value": 11700}],
+ "unclear": "shkurt, në shqip: çfarë nuk lexohej qartë, ose bosh"}
+Çdo numër që nuk lexohet me siguri vendose null. Mos llogarit litra apo vlera vetë.`;
+  }
+
+  async function readPhoto(file) {
+    if (!file) return;
+    const sample = await cap('sample');
+    if (!sample) return toast('Leximi i fotos nuk është i disponueshëm këtu');
+    const ctl = new AbortController();
+    const wait = ask('Po lexoj foton… Zakonisht zgjat 20–60 sekonda.', { ok: null, cancel: 'Ndalo', html: '<div class="spinner"></div>' });
+    wait.then(() => ctl.abort());
+    let data;
+    try {
+      data = await sample.json(photoPrompt(), { images: [file], signal: ctl.signal, modelTier: 'default' });
+    } catch (e) {
+      ask.close?.();
+      if (e.code === 'cancelled') return;
+      const why = { not_granted: 'Nuk u dha leje për leximin e fotos.', rate_limited: 'Shumë kërkesa. Provoni pas pak.', image_rejected: 'Fotoja nuk u pranua. Provoni JPG ose PNG më të vogël.', invalid_json: 'Fotoja nuk u lexua dot. Provoni një foto më të qartë dhe më afër.', refused: 'Fotoja nuk u lexua dot.' }[e.code] || 'Leximi dështoi. Provoni përsëri.';
+      if (e.code === 'not_granted' || e.code === 'sampling_disabled') document.querySelectorAll('.photo-card').forEach((c) => { c.hidden = true; });
+      return ask(why, { ok: 'Mirë', cancel: null });
+    }
+    ask.close?.();
+    showPhotoResult(data || {});
+  }
+
+  function showPhotoResult(data) {
+    const n = (v) => (typeof v === 'number' ? v : num(v));
+    const used = new Set();
+    const rows = (Array.isArray(data.rows) ? data.rows : []).map((r) => ({ ...r, index: Number.isInteger(r.index) ? r.index : -1, start: n(r.start), end: n(r.end), price: n(r.price) }))
+      .filter((r) => r.index >= 0 && r.index < draft.rows.length && !used.has(r.index) && used.add(r.index));
+    const extras = (Array.isArray(data.extras) ? data.extras : []).map((x) => ({ name: String(x.name || ''), qty: n(x.qty), price: n(x.price), value: n(x.value) }))
+      .filter((x) => x.qty != null || x.value != null);
+    const expenses = (Array.isArray(data.expenses) ? data.expenses : []).map((x) => ({ desc: String(x.desc || ''), value: n(x.value) })).filter((x) => x.desc || x.value != null);
+    if (!rows.length && !extras.length && !expenses.length) return ask('Në foto nuk u gjetën numra që mund të lexohen. Provoni një foto më të qartë.', { ok: 'Mirë', cancel: null });
+
+    const table = `<div class="scroll"><table>
+      <thead><tr><th>Pistoleta</th><th>Në foto</th><th class="num">Fillimi</th><th class="num">Fundi</th><th class="num">Litra</th><th class="num">Çmimi</th></tr></thead>
+      <tbody>${rows.map((r) => { const l = r.start != null && r.end != null ? round2(r.end - r.start) : null;
+        return `<tr><td>${esc(draft.rows[r.index].name)}</td><td class="muted">${esc(r.label || '')}</td><td class="num">${fmt(r.start)}</td><td class="num">${fmt(r.end)}</td>
+        <td class="num ${l < 0 ? 'neg' : ''}">${fmt(l)}</td><td class="num">${fmt(r.price, 0)}</td></tr>`; }).join('')}</tbody></table></div>
+      ${extras.length ? `<h3>Shitje të tjera</h3><table><tbody>${extras.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${fmt(x.qty, 0)}</td><td class="num">${fmt(x.price)}</td><td class="num">${fmt(x.value ?? (x.qty != null && x.price != null ? x.qty * x.price : null))}</td></tr>`).join('')}</tbody></table>` : ''}
+      ${expenses.length ? `<h3>Shpenzime</h3><table><tbody>${expenses.map((x) => `<tr><td>${esc(x.desc)}</td><td class="num">${fmt(x.value)}</td></tr>`).join('')}</tbody></table>` : ''}
+      ${data.unclear ? `<div class="warnbox">${esc(data.unclear)}</div>` : ''}
+      ${rows.some((r) => r.start != null && r.end != null && r.end < r.start) ? '<div class="warnbox">Disa rreshta kanë "Fundi" më të vogël se "Fillimi". Kontrollojini pasi t\'i vendosni.</div>' : ''}
+      <label class="check"><input type="checkbox" id="ph-start" checked> Vendos edhe "Fillimin" nga fotoja (përndryshe mbetet nga turni i mëparshëm)</label>
+      <label class="check"><input type="checkbox" id="ph-price" checked> Vendos edhe çmimet nga fotoja</label>`;
+    const msg = `U lexuan ${rows.length} pistoleta${expenses.length ? `, ${expenses.length} shpenzime` : ''}. Kontrolloni numrat me foton para se t'i vendosni.`;
+    let useStart = true, usePrice = true;
+    const p = ask(msg, { ok: 'Vendos në raport', html: table, wide: true });
+    document.getElementById('ph-start')?.addEventListener('change', (e) => { useStart = e.target.checked; });
+    document.getElementById('ph-price')?.addEventListener('change', (e) => { usePrice = e.target.checked; });
+    p.then((yes) => {
+      if (!yes) return;
+      for (const r of rows) {
+        const row = draft.rows[r.index];
+        if (useStart && r.start != null) row.start = r.start;
+        if (r.end != null) row.end = r.end;
+        if (usePrice && r.price != null) row.price = r.price;
+      }
+      for (const x of extras) {
+        const prod = S.products.find((pp) => pp.name.toLowerCase() === x.name.toLowerCase());
+        const slot = draft.extras.find((e) => prod && e.productId === prod.id && e.qty == null && e.value == null);
+        const val = x.qty != null && x.price != null ? null : x.value;
+        if (slot) Object.assign(slot, { qty: x.qty, price: x.price ?? slot.price, value: val });
+        else draft.extras.push({ id: uid(), productId: prod?.id || null, name: x.name, qty: x.qty, price: x.price, value: val });
+      }
+      draft.expenses = draft.expenses.filter((x) => x.desc || x.value != null).concat(expenses);
+      if (!draft.employee && data.employee) draft.employee = String(data.employee);
+      dirty = true; renderReport(); toast('Numrat u vendosën. Kontrollojini dhe shtypni "Ruaj raportin".');
+    });
+  }
 
   render();
 })();
