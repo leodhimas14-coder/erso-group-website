@@ -138,7 +138,7 @@
           rows, extras: rnd() < 0.6 ? [{ id: uid(), productId: ad.id, name: 'Adblu', qty: 1 + Math.floor(rnd() * 3), price: ad.price, value: null }] : [], expenses: exp });
       }
     }
-    const stocks = { 'Benz100': 1500, 'Benzine': 2500, 'D1 G': 2000, 'D2': 6000, 'Gaz': 5000, 'Adblu': 40, 'Vajra': 52 };
+    const stocks = { 'Benz100': 1500, 'Benzine': 2500, 'D1 G': 2000, 'D2': 6000, 'Gaz': 12000, 'Adblu': 40, 'Vajra': 52 };
     s.products.forEach((p) => { p.stockStart = stocks[p.name] || 0; });
     const d2 = s.products.find((p) => p.name === 'D2');
     const dd = new Date(day); dd.setDate(dd.getDate() - 3);
@@ -227,10 +227,10 @@
     }
     return m;
   }
-  function stock() {
-    const sold = soldByProduct(S.reports);
-    return S.products.map((p) => {
-      const delivered = round2(S.deliveries.filter((d) => d.productId === p.id).reduce((s, d) => s + d.qty, 0));
+  function stock(st = S) {
+    const sold = soldByProduct(st.reports);
+    return st.products.map((p) => {
+      const delivered = round2(st.deliveries.filter((d) => d.productId === p.id).reduce((s, d) => s + d.qty, 0));
       const out = sold[p.id]?.qty || 0;
       return { p, delivered, out, now: round2((p.stockStart || 0) + delivered - out) };
     });
@@ -298,14 +298,15 @@
   function routeFromHash() {
     const h = location.hash.slice(1);
     if (h.startsWith('pika-') && station(h.slice(5))) { S = station(h.slice(5)); tab = 'raporti'; }
-    else if (h === 'klientet') tab = 'klientet';
+    else if (h === 'klientet' || h === 'litrat') tab = h;
   }
 
   function renderNav() {
     const g = S && group(S.groupId);
     const top = `<button data-go="pikat" class="${tab === 'pikat' ? 'active' : ''}">Pikat</button>
+      <button data-go="litrat" class="${tab === 'litrat' ? 'active' : ''}">Litrat</button>
       <button data-go="klientet" class="${tab === 'klientet' || tab === 'klient' ? 'active' : ''}">Klientët</button>`;
-    const st = S && !['pikat', 'klientet', 'klient'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
+    const st = S && !['pikat', 'litrat', 'klientet', 'klient'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
       ${STATION_TABS.map(([t, l]) => `<button data-go="${t}" class="${tab === t ? 'active' : ''}">${l}</button>`).join('')}`
       : S ? `<button data-go="station" data-id="${S.id}" class="back">↩ ${esc(S.name)}</button>` : '';
     $nav.innerHTML = top + st;
@@ -317,6 +318,7 @@
     if (tab === 'pikat') renderHome();
     else if (tab === 'klientet') renderCustomers();
     else if (tab === 'klient') renderCustomer();
+    else if (tab === 'litrat') renderLiters();
     else if (tab === 'raporti') renderReport();
     else if (tab === 'historiku') renderHistory();
     else if (tab === 'gjendja') renderStock();
@@ -427,6 +429,14 @@
           </div>
           <div class="field" style="margin-top:10px"><label>Shënime</label><input type="text" id="r-note" value="${esc(d.note)}"></div>
         </div>
+        <div class="card">
+          <h2>Litrat e shitura</h2>
+          <div class="scroll"><table id="t-lit">
+            <thead><tr><th>Produkti</th><th class="num">Ky turn</th><th class="num">Gjithë dita</th><th class="num">Muaji deri sot</th></tr></thead>
+            <tbody></tbody><tfoot></tfoot>
+          </table></div>
+          <p class="note">"Gjithë dita" bashkon të gjitha turnet e datës ${esc(d.date)}. Të dhënat shkojnë vetë te faqja "Litrat".</p>
+        </div>
       </div>
     </div>`;
     recalc();
@@ -454,6 +464,7 @@
     const neg = d.rows.filter((r) => (rowCalc(r).liters ?? 0) < 0).length;
     const w = document.getElementById('negwarn');
     if (w) w.innerHTML = neg ? `<div class="warnbox">Kujdes: ${neg} pistoleta kanë "Fundi" më të vogël se "Fillimi" (litra negative). Kontrolloni leximet.</div>` : '';
+    renderShiftLiters();
     const dd = document.getElementById('dirty'); if (dd) dd.textContent = dirty ? ' • Ka ndryshime të paruajtura' : '';
   }
 
@@ -658,6 +669,7 @@
   $app.addEventListener('change', async (e) => {
     const el = e.target;
     if (el.id === 'restore') return restore(el.files[0]);
+    if (tab === 'litrat') return litersChange(el);
     if (tab === 'klientet' && el.id === 'c-month') { renderCustomers.month = el.value; return renderCustomers(); }
     if (tab === 'klient') return customerChange(el);
     if (tab === 'raporti' && el.dataset.f === 'kind') {
@@ -730,6 +742,7 @@
       // history
       case 'open': { const r = S.reports.find((x) => x.id === id); draft = structuredClone(r); dirty = false; tab = 'raporti'; return render(); }
       case 'open-st': return go('station', id);
+      case 'l-csv': return download(`litrat-${renderLiters.o.mode === 'dite' ? renderLiters.o.date : renderLiters.o.month}.csv`, csv(renderLiters.csv), 'text/csv');
       case 'g-add': case 'g-ren': case 'g-del': case 'st-add': case 'st-del':
       case 'c-add': case 'c-open': case 'c-pay': case 'c-pay-del': case 'c-del': case 'c-csv': case 'c-report':
         return homeAction(act, b);
@@ -1299,6 +1312,127 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
     }
   });
   $app.addEventListener('click', (e) => { if (e.target.closest('[data-go-list]')) go('klientet'); });
+
+  // ---------- liters sold, all stations ----------
+  // "Naftë / Benzinë / Gaz" matches the office sheet; "Çdo produkt" keeps D1 G, D2… apart.
+  const FUEL_ORDER = ['Naftë', 'Benzinë', 'Gaz'];
+  function fuelType(name) {
+    const n = norm(name);
+    if (n.includes('gaz') || n.includes('lpg')) return 'Gaz';
+    if (n.includes('benz')) return 'Benzinë';
+    if (/^d\d|naft|diesel|dizel/.test(n)) return 'Naftë';
+    return String(name).trim();
+  }
+  const catName = (st, productId, fallback, byType) => {
+    const name = st.products.find((p) => p.id === productId)?.name || fallback || '?';
+    return byType ? fuelType(name) : name.trim();
+  };
+  function litersOf(st, reports, byType) {
+    const m = {};
+    for (const rep of reports) for (const r of rep.rows) {
+      const l = rowCalc(r).liters;
+      if (l == null) continue;
+      const k = catName(st, r.productId, r.name, byType);
+      m[k] = round2((m[k] || 0) + l);
+    }
+    return m;
+  }
+  const catSort = (a, b) => {
+    const ia = FUEL_ORDER.indexOf(fuelType(a)); const ib = FUEL_ORDER.indexOf(fuelType(b));
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  };
+  const sumVals = (m) => round2(Object.values(m).reduce((a, v) => a + v, 0));
+
+  // Liters on the open report: this shift, the whole day and the month so far.
+  function renderShiftLiters() {
+    const tb = document.querySelector('#t-lit tbody'); if (!tb) return;
+    const d = draft;
+    const notThis = (r) => r.id !== d.id && !(r.date === d.date && r.shift === d.shift);
+    const shift = litersOf(S, [d], false);
+    const day = litersOf(S, [d, ...S.reports.filter((r) => r.date === d.date && notThis(r))], false);
+    const month = litersOf(S, [d, ...S.reports.filter((r) => r.date.startsWith(d.date.slice(0, 7)) && r.date <= d.date && notThis(r))], false);
+    const cats = [...new Set([...Object.keys(day), ...Object.keys(month)])].sort(catSort);
+    tb.innerHTML = cats.map((k) => `<tr><td>${esc(k)}</td><td class="num">${fmt(shift[k] ?? 0)}</td><td class="num">${fmt(day[k] ?? 0)}</td><td class="num">${fmt(month[k] ?? 0)}</td></tr>`).join('')
+      || '<tr><td colspan="4" class="muted">Shkruani "Fundin" e pistoletave.</td></tr>';
+    document.querySelector('#t-lit tfoot').innerHTML = `<tr><td>Totali</td><td class="num">${fmt(sumVals(shift))}</td><td class="num">${fmt(sumVals(day))}</td><td class="num">${fmt(sumVals(month))}</td></tr>`;
+  }
+
+  function renderLiters() {
+    const o = renderLiters.o ||= { mode: 'dite', date: localDate(), month: localDate().slice(0, 7), group: '', byType: true, dayCat: '' };
+    const gIdx = (st) => { const i = DB.groups.findIndex((g) => g.id === st.groupId); return i < 0 ? 999 : i; };
+    const sts = DB.stations.filter((st) => !o.group || st.groupId === o.group).sort((a, b) => gIdx(a) - gIdx(b));
+    const inPeriod = (r) => (o.mode === 'dite' ? r.date === o.date : r.date.startsWith(o.month));
+    const per = sts.map((st) => litersOf(st, st.reports.filter(inPeriod), o.byType));
+    const counts = sts.map((st) => st.reports.filter(inPeriod).length);
+    const cats = [...new Set(per.flatMap((m) => Object.keys(m)))].sort(catSort);
+    const rowTot = (k) => round2(per.reduce((a, m) => a + (m[k] || 0), 0));
+    const colTot = per.map(sumVals);
+    const grand = round2(colTot.reduce((a, v) => a + v, 0));
+
+    // Group names above the station columns, as in the office sheet.
+    const spans = [];
+    for (const st of sts) {
+      const name = group(st.groupId)?.name || 'Pa grup';
+      if (spans.length && spans[spans.length - 1].name === name) spans[spans.length - 1].n++; else spans.push({ name, n: 1 });
+    }
+    const head = `<thead><tr class="ghead"><th></th>${spans.map((x) => `<th colspan="${x.n}">${esc(x.name)}</th>`).join('')}<th></th></tr>
+      <tr><th>Emërtimi</th>${sts.map((st) => `<th class="num">${esc(st.name)}</th>`).join('')}<th class="num">Totali</th></tr></thead>`;
+    const period = o.mode === 'dite' ? o.date : o.month;
+    const t1 = `<div class="scroll"><table class="matrix">${head}
+      <tbody>${cats.map((k) => `<tr><td><b>${esc(k)}</b></td>${per.map((m) => `<td class="num">${m[k] ? fmt(m[k], 0) : ''}</td>`).join('')}<td class="num"><b>${fmt(rowTot(k), 0)}</b></td></tr>`).join('')
+        || `<tr><td colspan="${sts.length + 2}" class="muted">Nuk ka raporte të ruajtura për ${esc(period)}.</td></tr>`}
+        <tr class="muted"><td>Raporte (turne)</td>${counts.map((n) => `<td class="num ${n ? '' : 'missing'}">${n}</td>`).join('')}<td class="num">${counts.reduce((a, n) => a + n, 0)}</td></tr></tbody>
+      <tfoot><tr><td>Totali litra</td>${colTot.map((v) => `<td class="num">${fmt(v, 0)}</td>`).join('')}<td class="num">${fmt(grand, 0)}</td></tr></tfoot></table></div>`;
+    renderLiters.csv = [['Shitjet në litra', period], ['Emërtimi', ...sts.map((st) => st.name), 'Totali'],
+      ...cats.map((k) => [k, ...per.map((m) => m[k] || 0), rowTot(k)]), ['Totali litra', ...colTot, grand]];
+
+    let t2 = '';
+    if (o.mode === 'muaj') {
+      const [y, mo] = o.month.split('-').map(Number);
+      const lastDay = new Date(y, mo, 0).getDate();
+      const today = localDate();
+      const days = [];
+      for (let d = 1; d <= lastDay; d++) { const ds = `${o.month}-${pad(d)}`; if (ds <= today) days.push(ds); }
+      const cell = (st, ds) => { const m = litersOf(st, st.reports.filter((r) => r.date === ds), o.byType); return o.dayCat ? m[o.dayCat] || 0 : sumVals(m); };
+      const grid = days.map((ds) => sts.map((st) => cell(st, ds)));
+      t2 = `<div class="card"><div class="row"><h2 style="margin:0;flex:1">Litrat ditë për ditë</h2>
+        <div class="field"><label>Produkti</label><select id="l-daycat"><option value="">Të gjitha</option>${cats.map((k) => `<option ${k === o.dayCat ? 'selected' : ''}>${esc(k)}</option>`).join('')}</select></div></div>
+        <div class="scroll" style="margin-top:10px"><table class="matrix"><thead><tr><th>Data</th>${sts.map((st) => `<th class="num">${esc(st.name)}</th>`).join('')}<th class="num">Totali</th></tr></thead>
+        <tbody>${days.map((ds, i) => `<tr><td>${ds.slice(8)}.${ds.slice(5, 7)}</td>${grid[i].map((v) => `<td class="num ${v ? '' : 'missing'}">${v ? fmt(v, 0) : '—'}</td>`).join('')}<td class="num"><b>${fmt(round2(grid[i].reduce((a, v) => a + v, 0)), 0)}</b></td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>Muaji</td>${sts.map((st, j) => `<td class="num">${fmt(round2(grid.reduce((a, r) => a + r[j], 0)), 0)}</td>`).join('')}<td class="num">${fmt(round2(grid.flat().reduce((a, v) => a + v, 0)), 0)}</td></tr></tfoot></table></div>
+        <p class="note">"—" do të thotë që për atë ditë nuk ka raport të ruajtur.</p></div>`;
+    }
+
+    const stocks = sts.map((st) => {
+      const m = {};
+      for (const s of stock(st)) if (s.p.metered) { const k = o.byType ? fuelType(s.p.name) : s.p.name.trim(); m[k] = round2((m[k] || 0) + s.now); }
+      return m;
+    });
+    const sCats = [...new Set(stocks.flatMap((m) => Object.keys(m)))].sort(catSort);
+    const t3 = `<div class="card"><h2>Gjendja e karburantit sipas pikave tani</h2><div class="scroll"><table class="matrix">${head}
+      <tbody>${sCats.map((k) => `<tr><td><b>${esc(k)}</b></td>${stocks.map((m) => `<td class="num ${(m[k] ?? 0) < 0 ? 'neg' : ''}">${m[k] != null ? fmt(m[k], 0) : ''}</td>`).join('')}<td class="num"><b>${fmt(round2(stocks.reduce((a, m) => a + (m[k] || 0), 0)), 0)}</b></td></tr>`).join('')}</tbody>
+      </table></div><p class="note">Gjendja fillestare + furnizimet − shitjet, për çdo pikë (te "Gjendja" e pikës).</p></div>`;
+
+    $app.innerHTML = `${demoBanner()}<div class="card">
+      <div class="row"><h2 style="margin:0;flex:1">Shitjet në litra</h2>
+        <div class="field"><label>Periudha</label><select id="l-mode"><option value="dite">Një ditë</option><option value="muaj" ${o.mode === 'muaj' ? 'selected' : ''}>Gjithë muaji</option></select></div>
+        ${o.mode === 'dite' ? `<div class="field"><label>Data</label><input type="date" id="l-date" value="${o.date}"></div>` : `<div class="field"><label>Muaji</label><input type="month" id="l-month" value="${o.month}"></div>`}
+        <div class="field"><label>Grupi</label><select id="l-group"><option value="">Të gjitha</option>${DB.groups.map((g) => `<option value="${g.id}" ${g.id === o.group ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Ndarja</label><select id="l-type"><option value="1">Naftë / Benzinë / Gaz</option><option value="0" ${o.byType ? '' : 'selected'}>Çdo produkt</option></select></div>
+        <button class="btn" data-act="l-csv">⬇ Excel (CSV)</button></div>
+      <div style="margin-top:12px">${t1}</div></div>${t2}${t3}`;
+  }
+  function litersChange(el) {
+    const o = renderLiters.o;
+    if (el.id === 'l-mode') o.mode = el.value;
+    else if (el.id === 'l-date' && el.value) o.date = el.value;
+    else if (el.id === 'l-month' && el.value) o.month = el.value;
+    else if (el.id === 'l-group') o.group = el.value;
+    else if (el.id === 'l-type') { o.byType = el.value === '1'; o.dayCat = ''; }
+    else if (el.id === 'l-daycat') o.dayCat = el.value;
+    else return;
+    renderLiters();
+  }
 
   routeFromHash();
   render();

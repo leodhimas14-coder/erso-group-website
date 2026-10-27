@@ -105,3 +105,7 @@ td.neg,.neg{color:var(--accent);font-weight:700}
 tr.is-client td:first-child input{background:#e6f0ff}
 .owe{color:var(--warn);font-weight:700}
 td.paid{color:var(--ok)}
+table.matrix th,table.matrix td{padding:4px 8px}
+table.matrix tr.ghead th{text-align:center;background:#e3e6eb}
+table.matrix tbody tr:nth-child(even) td{background:#fafbfc}
+td.missing{color:#b8bcc4}
