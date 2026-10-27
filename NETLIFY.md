@@ -57,6 +57,8 @@ Hyjnë vetëm llogaritë GitHub që kanë të drejtë shkrimi në repo. Për t'i
 
 Hapni `https://adresa-juaj/karburant/` (faqja nuk shfaqet në Google dhe nuk lidhet nga faqja kryesore).
 
+- **Pikat:** faqja e parë tregon grupet (p.sh. Durrës, Tiranë, Dibër) dhe pikat brenda tyre. Çdo pikë hapet si faqe më vete dhe ka lidhjen e vet (`/karburant/#pika-…`), që mund ta ruani te të preferuarat në kompjuterin e asaj pike.
+- **Klientët:** te "Shpenzime ditore dhe klientë" shkruani emrin e klientit që paguan në fund të muajit (p.sh. Nedi). Klienti shënohet me datën e raportit te faqja **Klientët**, ku shihni sa ka marrë këtë muaj, sa ka paguar dhe sa i mbetet. Pagesën mujore e regjistroni po aty.
 - **Raporti:** zgjidhni datën, turnin dhe punonjësin. "Fillimi" i çdo pistolete merret vetë nga "Fundi" i turnit të mëparshëm. Shkruani "Fundi"; litrat (fundi − fillimi), vlera (litra × çmimi) dhe totalet dalin vetë. Shtoni shpenzimet ditore dhe shtypni **Ruaj raportin**.
 - **Çmimet & Cilësimet:** ndryshoni ose fshini çmimet, produktet, pistoletat dhe turnet. Raportet e ruajtura e mbajnë çmimin e vjetër.
 - **Gjendja:** gjendja e depozitave dhe furnizimet.

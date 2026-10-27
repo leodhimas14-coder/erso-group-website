@@ -89,3 +89,19 @@ td.neg,.neg{color:var(--accent);font-weight:700}
 .form label.check{flex-direction:row;color:var(--text)}
 .form input[type=text],.form select{font-size:14px;color:var(--text)}
 .badge.new{background:#e6f0ff;color:#1d4ed8}
+.crumb{color:#fff;padding:6px 4px 6px 14px;border-left:1px solid #3a3d45;margin-left:6px}
+.tabs .back{color:#fff;border-color:#3a3d45}
+.page-title{margin:0;font-size:20px}
+.small{font-size:12px;font-weight:400}
+.group h2{font-size:17px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.tile{display:grid;grid-template-columns:1fr auto;gap:2px 10px;text-align:left;border:1px solid var(--line);border-radius:var(--r);background:#fafbfc;padding:12px;cursor:pointer;color:var(--text)}
+.tile:hover,.tile:focus-visible{border-color:var(--accent);background:var(--accent-soft)}
+.tile-name{grid-column:1/-1;font-weight:700;font-size:15px;margin-bottom:6px}
+.tile-k{color:var(--muted);font-size:12px;align-self:end}
+.tile-v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.tile-meta{grid-column:1/-1;color:var(--muted);font-size:12px;margin-top:4px}
+.empty{text-align:center;padding:28px}
+tr.is-client td:first-child input{background:#e6f0ff}
+.owe{color:var(--warn);font-weight:700}
+td.paid{color:var(--ok)}

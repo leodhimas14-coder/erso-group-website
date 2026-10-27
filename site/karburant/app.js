@@ -1,11 +1,12 @@
-// Fuel station daily sales report: pump meter readings per shift, prices, daily expenses
-// and tank stock. Everything is kept in this browser's localStorage; the JSON backup in
-// "Cilësimet" moves the data to another computer.
+// Fuel stations grouped by area (Durrës, Tiranë…). Each station has its own daily shift
+// reports (pump readings, prices, expenses), tank stock and settings; customers who pay
+// monthly are shared by all stations. Everything is kept in this browser's localStorage;
+// the JSON backup on the home page moves the data to another computer.
 (function () {
   'use strict';
 
   const DEMO = !!window.KARBURANT_DEMO;
-  const KEY = DEMO ? 'erso-karburant-demo' : 'erso-karburant-v1';
+  const KEY = DEMO ? 'erso-karburant-demo2' : 'erso-karburant-v1';
   const $app = document.getElementById('app');
 
   // ---------- helpers ----------
@@ -110,9 +111,9 @@
     };
   }
   // Demo: five days of invented shifts so every screen has something to show.
-  function demoState() {
+  function demoState(seedInit = 7, custs = []) {
     const s = defaults();
-    let seed = 7;
+    let seed = seedInit;
     const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
     const base = { 'Benz100': 60, 'Benzine': 90, 'D1 G': 70, 'D2': 160, 'Gaz': 180 };
     const meters = [34800.4, 139500.49, 87760.15, 331300.73, 442500.2, 160200.61, 232100.45, 69000.44, 553000.53, 923100.98, 485700.83, 341300.39];
@@ -120,9 +121,10 @@
     const costs = [['BANKE', 11700], ['Furnitor buke', 1200], ['Pastrim', 2000], ['Rimbursim klienti', 3500], ['Telefon', 1000]];
     const pn = (id) => s.products.find((p) => p.id === id).name;
     const day = new Date();
-    for (let k = 5; k >= 1; k--) {
+    // Five full days plus today's first shift, so today's shift II is the one to fill in.
+    for (let k = 5; k >= 0; k--) {
       const d = new Date(day); d.setDate(d.getDate() - k);
-      for (const sh of s.shifts) {
+      for (const sh of k ? s.shifts : s.shifts.slice(0, 1)) {
         const rows = s.pumps.map((pm, i) => {
           const start = meters[i];
           const end = round2(start + base[pn(pm.productId)] * (0.4 + rnd()));
@@ -130,7 +132,8 @@
           return { pumpId: pm.id, name: pm.name, productId: pm.productId, start, end, price: pumpPrice(pm, s) };
         });
         const ad = s.products.find((p) => p.name === 'Adblu');
-        const exp = costs.filter(() => rnd() < 0.35).map(([desc, value]) => ({ desc, value }));
+        const exp = costs.filter(() => rnd() < 0.35).map(([desc, value]) => ({ desc, value, kind: 'exp' }));
+        for (const c of custs) if (rnd() < 0.12) exp.push({ desc: c.name, value: Math.round(2 + rnd() * 30) * 500, kind: 'client', customerId: c.id });
         s.reports.push({ id: uid(), date: localDate(d), shift: sh.id, employee: people[shiftIdxIn(s, sh.id) % 2], note: 'Shembull',
           rows, extras: rnd() < 0.6 ? [{ id: uid(), productId: ad.id, name: 'Adblu', qty: 1 + Math.floor(rnd() * 3), price: ad.price, value: null }] : [], expenses: exp });
       }
@@ -140,20 +143,47 @@
     const d2 = s.products.find((p) => p.name === 'D2');
     const dd = new Date(day); dd.setDate(dd.getDate() - 3);
     s.deliveries.push({ id: uid(), date: localDate(dd), productId: d2.id, qty: 4000, note: 'Shembull: cisternë' });
-    s.demo = true;
     return s;
+  }
+  function demoDB() {
+    const db = emptyDB();
+    db.customers = ['Nedi', 'Arbi', 'Neri', 'Hoti Metal', 'Bilo Opel'].map((name) => ({ id: uid(), name, phone: '', note: 'Shembull' }));
+    const plan = { 'Durrës': ['Shkozet', 'Plepa'], 'Tiranë': ['Kombinat', 'Kashar'], 'Dibër': ['Peshkopi'] };
+    let seed = 7;
+    for (const [g, names] of Object.entries(plan)) {
+      const grp = { id: uid(), name: g };
+      db.groups.push(grp);
+      for (const name of names) db.stations.push({ id: uid(), name, groupId: grp.id, ...demoState(seed += 11, db.customers) });
+    }
+    const d = new Date(); d.setDate(d.getDate() - 2);
+    db.payments.push({ id: uid(), customerId: db.customers[0].id, date: localDate(d), amount: 10000, note: 'Shembull: pagesë' });
+    return db;
+  }
+  const emptyDB = () => ({ groups: [], stations: [], customers: [], payments: [] });
+  // Older saves held one station; they become "Pika 1" in a group to rename.
+  function upgrade(raw) {
+    if (raw && Array.isArray(raw.stations)) return { ...emptyDB(), ...raw };
+    if (raw && Array.isArray(raw.products)) {
+      const grp = { id: uid(), name: 'Pa grup' };
+      return { ...emptyDB(), groups: [grp], stations: [{ id: uid(), name: 'Pika 1', groupId: grp.id, ...defaults(), ...raw }] };
+    }
+    return null;
   }
   function shiftIdxIn(s, id) { return s.shifts.findIndex((x) => x.id === id); }
   function load() {
     try {
-      const s = JSON.parse(localStorage.getItem(KEY));
-      if (s && Array.isArray(s.products)) return { ...defaults(), ...s };
+      const db = upgrade(JSON.parse(localStorage.getItem(KEY)));
+      if (db) return db;
     } catch (e) { /* fall through */ }
-    return DEMO ? demoState() : defaults();
+    return DEMO ? demoDB() : emptyDB();
   }
-  let S = load();
+  let DB = load();
+  let S = null; // the station that is open
+  const station = (id) => DB.stations.find((x) => x.id === id);
+  const group = (id) => DB.groups.find((x) => x.id === id);
+  const customer = (id) => DB.customers.find((x) => x.id === id);
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(S)); }
+    try { localStorage.setItem(KEY, JSON.stringify(DB)); }
     catch (e) { toast('Të dhënat nuk u ruajtën në këtë shfletues: ' + e.message); }
   }
   const product = (id) => S.products.find((p) => p.id === id);
@@ -175,9 +205,10 @@
   function totals(rep) {
     const fuel = round2(rep.rows.reduce((s, r) => s + (rowCalc(r).value || 0), 0));
     const extras = round2(rep.extras.reduce((s, x) => s + (extraValue(x) || 0), 0));
-    const expenses = round2(rep.expenses.reduce((s, x) => s + (x.value || 0), 0));
+    const expenses = round2(rep.expenses.reduce((s, x) => s + (x.kind === 'client' ? 0 : x.value || 0), 0));
+    const credit = round2(rep.expenses.reduce((s, x) => s + (x.kind === 'client' ? x.value || 0 : 0), 0));
     const sales = round2(fuel + extras);
-    return { fuel, extras, sales, expenses, net: round2(sales - expenses) };
+    return { fuel, extras, sales, expenses, credit, net: round2(sales - expenses - credit) };
   }
   function soldByProduct(reports) {
     const m = {};
@@ -238,12 +269,55 @@
   }
   let draft = null;
   let dirty = false;
-  let tab = 'raporti';
+  // view: 'pikat' (home), 'klientet', 'klient' (one customer) or a station tab.
+  let tab = 'pikat';
+  let custId = null;
+  const STATION_TABS = [['raporti', 'Raporti'], ['historiku', 'Historiku'], ['gjendja', 'Gjendja'], ['permbledhje', 'Përmbledhje'], ['cilesimet', 'Çmimet & Cilësimet']];
+  const $nav = document.getElementById('tabs');
+
+  // Each station and the customer list has its own link (#pika-…, #klientet).
+  function setHash(h) {
+    try { if (location.hash.slice(1) !== h) history.replaceState(null, '', h ? '#' + h : location.pathname + location.search); } catch (e) { /* sandboxed */ }
+  }
+  async function leaveReport() {
+    if (tab === 'raporti' && dirty && !(await ask('Raporti ka ndryshime të paruajtura. Të largohem pa ruajtur?'))) return false;
+    if (tab === 'raporti') { draft = null; dirty = false; }
+    return true;
+  }
+  async function go(to, id) {
+    if (!(await leaveReport())) return;
+    if (to === 'station') {
+      const st = station(id); if (!st) return go('pikat');
+      if (S !== st) { S = st; draft = null; }
+      tab = 'raporti'; setHash('pika-' + st.id);
+    } else if (to === 'klient') { custId = id; tab = 'klient'; setHash('klientet'); }
+    else if (STATION_TABS.some(([t]) => t === to) && S) tab = to;
+    else { tab = to; if (to === 'pikat') { S = null; setHash(''); } else setHash(to); }
+    render(); window.scrollTo(0, 0);
+  }
+  function routeFromHash() {
+    const h = location.hash.slice(1);
+    if (h.startsWith('pika-') && station(h.slice(5))) { S = station(h.slice(5)); tab = 'raporti'; }
+    else if (h === 'klientet') tab = 'klientet';
+  }
+
+  function renderNav() {
+    const g = S && group(S.groupId);
+    const top = `<button data-go="pikat" class="${tab === 'pikat' ? 'active' : ''}">Pikat</button>
+      <button data-go="klientet" class="${tab === 'klientet' || tab === 'klient' ? 'active' : ''}">Klientët</button>`;
+    const st = S && !['pikat', 'klientet', 'klient'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
+      ${STATION_TABS.map(([t, l]) => `<button data-go="${t}" class="${tab === t ? 'active' : ''}">${l}</button>`).join('')}`
+      : S ? `<button data-go="station" data-id="${S.id}" class="back">↩ ${esc(S.name)}</button>` : '';
+    $nav.innerHTML = top + st;
+  }
 
   // ---------- views ----------
   function render() {
-    document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
-    if (tab === 'raporti') renderReport();
+    renderNav();
+    if (tab === 'pikat') renderHome();
+    else if (tab === 'klientet') renderCustomers();
+    else if (tab === 'klient') renderCustomer();
+    else if (tab === 'raporti') renderReport();
     else if (tab === 'historiku') renderHistory();
     else if (tab === 'gjendja') renderStock();
     else if (tab === 'permbledhje') renderSummary();
@@ -325,16 +399,20 @@
 
       <div>
         <div class="card">
-          <h2>Shpenzime ditore</h2>
+          <h2>Shpenzime ditore dhe klientë</h2>
+          <datalist id="cust-list">${DB.customers.map((c) => `<option value="${esc(c.name)}"></option>`).join('')}</datalist>
           <div class="scroll"><table id="t-exp">
-            <thead><tr><th>Përshkrimi</th><th class="num">Vlera</th><th class="no-print"></th></tr></thead>
-            <tbody>${d.expenses.map((x, i) => `<tr data-i="${i}">
-              <td><input data-f="desc" value="${esc(x.desc)}" placeholder="p.sh. BANKE"></td>
+            <thead><tr><th>Përshkrimi / klienti</th><th>Lloji</th><th class="num">Vlera</th><th class="no-print"></th></tr></thead>
+            <tbody>${d.expenses.map((x, i) => `<tr data-i="${i}" class="${x.kind === 'client' ? 'is-client' : ''}">
+              <td><input data-f="desc" list="cust-list" value="${esc(x.desc)}" placeholder="p.sh. BANKE ose Nedi"></td>
+              <td><select data-f="kind"><option value="exp">Shpenzim</option><option value="client" ${x.kind === 'client' ? 'selected' : ''}>Klient (borxh)</option></select></td>
               <td><input class="num" data-f="value" inputmode="decimal" value="${inVal(x.value)}"></td>
               <td class="no-print"><button class="x" data-act="del-exp" data-i="${i}">✕</button></td></tr>`).join('')}</tbody>
-            <tfoot><tr><td>Totali shpenzime</td><td class="num" id="tot-exp"></td><td class="no-print"></td></tr></tfoot>
+            <tfoot><tr><td colspan="2">Totali shpenzime</td><td class="num" id="tot-exp"></td><td class="no-print"></td></tr>
+              <tr><td colspan="2">Klientë në borxh</td><td class="num" id="tot-credit"></td><td class="no-print"></td></tr></tfoot>
           </table></div>
-          <button class="btn small no-print" data-act="add-exp" style="margin-top:6px">+ Shto shpenzim</button>
+          <button class="btn small no-print" data-act="add-exp" style="margin-top:6px">+ Shto rresht</button>
+          <p class="note no-print">Klientët që paguajnë një herë në muaj: shkruani emrin (p.sh. Nedi). Nëse klienti është në listë, njihet vetë. Për klient të ri zgjidhni "Klient (borxh)". Shënohet me datën e raportit te faqja Klientët.</p>
         </div>
 
         <div class="card">
@@ -344,7 +422,8 @@
             <div class="stat"><div class="k">Shitje të tjera</div><div class="v" id="s-extras"></div></div>
             <div class="stat"><div class="k">Totali i shitjeve</div><div class="v" id="s-sales"></div></div>
             <div class="stat"><div class="k">Shpenzime</div><div class="v" id="s-exp"></div></div>
-            <div class="stat hl"><div class="k">Për t'u dorëzuar (shitje − shpenzime)</div><div class="v" id="s-net"></div></div>
+            <div class="stat"><div class="k">Klientë në borxh</div><div class="v" id="s-credit"></div></div>
+            <div class="stat hl"><div class="k">Për t'u dorëzuar (shitje − shpenzime − borxhe)</div><div class="v" id="s-net"></div></div>
           </div>
           <div class="field" style="margin-top:10px"><label>Shënime</label><input type="text" id="r-note" value="${esc(d.note)}"></div>
         </div>
@@ -370,8 +449,8 @@
     });
     const t = totals(d);
     const set = (id, v) => { const el = document.getElementById(id); if (el) { el.textContent = fmt(v); el.classList.toggle('neg', v < 0); } };
-    set('tot-l', round2(liters)); set('tot-fuel', t.fuel); set('tot-extras', t.extras); set('tot-exp', t.expenses);
-    set('s-fuel', t.fuel); set('s-extras', t.extras); set('s-sales', t.sales); set('s-exp', t.expenses); set('s-net', t.net);
+    set('tot-l', round2(liters)); set('tot-fuel', t.fuel); set('tot-extras', t.extras); set('tot-exp', t.expenses); set('tot-credit', t.credit);
+    set('s-fuel', t.fuel); set('s-extras', t.extras); set('s-sales', t.sales); set('s-exp', t.expenses); set('s-credit', t.credit); set('s-net', t.net);
     const neg = d.rows.filter((r) => (rowCalc(r).liters ?? 0) < 0).length;
     const w = document.getElementById('negwarn');
     if (w) w.innerHTML = neg ? `<div class="warnbox">Kujdes: ${neg} pistoleta kanë "Fundi" më të vogël se "Fillimi" (litra negative). Kontrolloni leximet.</div>` : '';
@@ -385,6 +464,12 @@
     if (clash && !(await ask('Ka një raport tjetër për këtë datë dhe turn. Ta zëvendësoj?'))) return;
     if (clash) S.reports = S.reports.filter((r) => r !== clash);
     d.expenses = d.expenses.filter((x) => x.desc || x.value != null);
+    if (d.expenses.some((x) => x.kind === 'client' && !x.desc.trim())) return toast('Shkruani emrin e klientit');
+    for (const x of d.expenses) {
+      if (x.kind !== 'client') { delete x.customerId; continue; }
+      const c = findCustomer(x.desc) || addCustomer(x.desc);
+      x.customerId = c.id; x.desc = c.name; delete x.auto;
+    }
     d.extras = d.extras.filter((x) => x.qty != null || x.value != null);
     if (!d.id) d.id = uid();
     d.savedAt = new Date().toISOString();
@@ -396,15 +481,15 @@
   function reportCsv(rep) {
     const t = totals(rep);
     const rows = [
-      ['RAPORTI DITOR I SHITJEVE'], ['Data', rep.date, 'Turni', shiftName(rep.shift), 'Punonjësi', rep.employee], [],
+      ['RAPORTI DITOR I SHITJEVE'], ['Pika', S.name, 'Data', rep.date, 'Turni', shiftName(rep.shift), 'Punonjësi', rep.employee], [],
       ['Emërtimi', 'Fillimi', 'Fundi', 'Litra', 'Çmimi', 'Vlera'],
       ...rep.rows.map((r) => { const c = rowCalc(r); return [r.name, r.start, r.end, c.liters, r.price, c.value]; }),
       ['Totali karburant', '', '', '', '', t.fuel], [],
       ['Shitje të tjera', 'Sasia', 'Çmimi', 'Vlera'],
       ...rep.extras.map((x) => [x.name, x.qty, x.price, extraValue(x)]),
       ['Totali shitje të tjera', '', '', t.extras], [],
-      ['Shpenzime ditore', 'Vlera'], ...rep.expenses.map((x) => [x.desc, x.value]),
-      ['Totali shpenzime', t.expenses], [],
+      ['Shpenzime ditore', 'Lloji', 'Vlera'], ...rep.expenses.map((x) => [x.desc, x.kind === 'client' ? 'Klient' : 'Shpenzim', x.value]),
+      ['Totali shpenzime', '', t.expenses], ['Klientë në borxh', '', t.credit], [],
       ['Totali i shitjeve', t.sales], ['Për t\'u dorëzuar', t.net], ['Shënime', rep.note || ''],
     ];
     return csv(rows);
@@ -413,20 +498,20 @@
   function renderHistory() {
     const month = renderHistory.month ||= localDate().slice(0, 7);
     const list = sortedReports().filter((r) => !month || r.date.startsWith(month)).reverse();
-    const sum = list.reduce((a, r) => { const t = totals(r); a.sales += t.sales; a.exp += t.expenses; a.net += t.net; return a; }, { sales: 0, exp: 0, net: 0 });
+    const sum = list.reduce((a, r) => { const t = totals(r); a.sales += t.sales; a.exp += t.expenses; a.credit += t.credit; a.net += t.net; return a; }, { sales: 0, exp: 0, credit: 0, net: 0 });
     $app.innerHTML = `<div class="card">
       <div class="row"><h2 style="margin:0;flex:1">Historiku i raporteve</h2>
         <div class="field"><label>Muaji</label><input type="month" id="h-month" value="${month}"></div>
         <button class="btn" data-act="h-all">Të gjitha</button>
         <button class="btn" data-act="h-csv">⬇ Excel (CSV)</button></div>
       <div class="scroll" style="margin-top:10px"><table>
-        <thead><tr><th>Data</th><th>Turni</th><th>Punonjësi</th><th class="num">Litra</th><th class="num">Shitje</th><th class="num">Shpenzime</th><th class="num">Për dorëzim</th><th></th></tr></thead>
+        <thead><tr><th>Data</th><th>Turni</th><th>Punonjësi</th><th class="num">Litra</th><th class="num">Shitje</th><th class="num">Shpenzime</th><th class="num">Klientë</th><th class="num">Për dorëzim</th><th></th></tr></thead>
         <tbody>${list.map((r) => { const t = totals(r); const l = round2(r.rows.reduce((s, x) => s + (rowCalc(x).liters || 0), 0));
           return `<tr><td>${r.date}</td><td>${esc(shiftName(r.shift))}</td><td>${esc(r.employee)}</td>
-          <td class="num">${fmt(l)}</td><td class="num">${fmt(t.sales)}</td><td class="num">${fmt(t.expenses)}</td><td class="num ${t.net < 0 ? 'neg' : ''}">${fmt(t.net)}</td>
+          <td class="num">${fmt(l)}</td><td class="num">${fmt(t.sales)}</td><td class="num">${fmt(t.expenses)}</td><td class="num">${fmt(t.credit)}</td><td class="num ${t.net < 0 ? 'neg' : ''}">${fmt(t.net)}</td>
           <td><button class="btn small" data-act="open" data-id="${r.id}">Hap</button> <button class="btn small danger" data-act="h-del" data-id="${r.id}">Fshi</button></td></tr>`; }).join('')
-          || '<tr><td colspan="8" class="muted">Nuk ka raporte për këtë periudhë.</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="4">Totali (${list.length} turne)</td><td class="num">${fmt(sum.sales)}</td><td class="num">${fmt(sum.exp)}</td><td class="num">${fmt(sum.net)}</td><td></td></tr></tfoot>
+          || '<tr><td colspan="9" class="muted">Nuk ka raporte për këtë periudhë.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="4">Totali (${list.length} turne)</td><td class="num">${fmt(sum.sales)}</td><td class="num">${fmt(sum.exp)}</td><td class="num">${fmt(sum.credit)}</td><td class="num">${fmt(sum.net)}</td><td></td></tr></tfoot>
       </table></div></div>`;
     renderHistory.list = list;
   }
@@ -466,16 +551,17 @@
     const reps = S.reports.filter((r) => r.date.startsWith(month));
     const sold = soldByProduct(reps);
     const days = {};
-    for (const r of reps) { const t = totals(r); const o = (days[r.date] ||= { sales: 0, exp: 0, net: 0, n: 0 }); o.sales += t.sales; o.exp += t.expenses; o.net += t.net; o.n++; }
-    const sum = Object.values(days).reduce((a, o) => ({ sales: a.sales + o.sales, exp: a.exp + o.exp, net: a.net + o.net }), { sales: 0, exp: 0, net: 0 });
+    for (const r of reps) { const t = totals(r); const o = (days[r.date] ||= { sales: 0, exp: 0, net: 0, n: 0 }); o.sales += t.sales; o.exp += t.expenses + t.credit; o.net += t.net; o.n++; }
+    const sum = reps.reduce((a, r) => { const t = totals(r); a.sales += t.sales; a.exp += t.expenses; a.credit += t.credit; a.net += t.net; return a; }, { sales: 0, exp: 0, credit: 0, net: 0 });
     const expByDesc = {};
-    for (const r of reps) for (const x of r.expenses) { const k = (x.desc || '—').trim(); expByDesc[k] = round2((expByDesc[k] || 0) + (x.value || 0)); }
+    for (const r of reps) for (const x of r.expenses) { const k = (x.desc || '—').trim() + (x.kind === 'client' ? ' (klient)' : ''); expByDesc[k] = round2((expByDesc[k] || 0) + (x.value || 0)); }
     $app.innerHTML = `<div class="card"><div class="row"><h2 style="margin:0;flex:1">Përmbledhje mujore</h2>
       <div class="field"><label>Muaji</label><input type="month" id="m-month" value="${month}"></div>
       ${inViewer ? '' : '<button class="btn" data-act="print">🖨 Printo</button>'}</div>
       <div class="totals" style="margin-top:12px">
         <div class="stat"><div class="k">Shitje</div><div class="v">${fmt(sum.sales)}</div></div>
         <div class="stat"><div class="k">Shpenzime</div><div class="v">${fmt(sum.exp)}</div></div>
+        <div class="stat"><div class="k">Klientë në borxh</div><div class="v">${fmt(sum.credit)}</div></div>
         <div class="stat hl"><div class="k">Neto</div><div class="v">${fmt(sum.net)}</div></div>
         <div class="stat"><div class="k">Turne</div><div class="v">${reps.length}</div></div>
       </div></div>
@@ -484,12 +570,12 @@
         <thead><tr><th>Produkti</th><th class="num">Sasia</th><th class="num">Vlera</th></tr></thead>
         <tbody>${S.products.filter((p) => sold[p.id]).map((p) => `<tr><td>${esc(p.name)}</td><td class="num">${fmt(sold[p.id].qty)} ${esc(p.unit)}</td><td class="num">${fmt(sold[p.id].value)}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Pa të dhëna.</td></tr>'}</tbody>
       </table></div>
-      <h3>Shpenzimet sipas përshkrimit</h3><div class="scroll"><table>
+      <h3>Shpenzimet dhe klientët sipas emrit</h3><div class="scroll"><table>
         <thead><tr><th>Përshkrimi</th><th class="num">Vlera</th></tr></thead>
         <tbody>${Object.entries(expByDesc).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${fmt(v)}</td></tr>`).join('') || '<tr><td colspan="2" class="muted">Pa shpenzime.</td></tr>'}</tbody>
       </table></div></div>
       <div class="card"><h2>Sipas ditës</h2><div class="scroll"><table>
-        <thead><tr><th>Data</th><th class="num">Turne</th><th class="num">Shitje</th><th class="num">Shpenzime</th><th class="num">Neto</th></tr></thead>
+        <thead><tr><th>Data</th><th class="num">Turne</th><th class="num">Shitje</th><th class="num">Shpenzime + klientë</th><th class="num">Neto</th></tr></thead>
         <tbody>${Object.entries(days).sort().map(([d, o]) => `<tr><td>${d}</td><td class="num">${o.n}</td><td class="num">${fmt(o.sales)}</td><td class="num">${fmt(o.exp)}</td><td class="num">${fmt(o.net)}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Pa të dhëna.</td></tr>'}</tbody>
       </table></div></div></div>`;
   }
@@ -498,6 +584,13 @@
     const used = (id) => S.pumps.some((p) => p.productId === id);
     const hist = [...S.priceHistory].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 100);
     $app.innerHTML = `
+    <div class="card"><h2>Pika</h2>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:180px"><label>Emri i pikës</label><input type="text" id="st-name" value="${esc(S.name)}"></div>
+        <div class="field"><label>Grupi</label><select id="st-group">${DB.groups.map((g) => `<option value="${g.id}" ${g.id === S.groupId ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></div>
+        <button class="btn danger" data-act="st-del">Fshi pikën</button>
+      </div>
+    </div>
     <div class="card"><h2>Produktet dhe çmimet</h2>
       <div class="scroll"><table>
         <thead><tr><th>Emërtimi</th><th class="num">Çmimi aktual</th><th>Njësia</th><th>Me pistoletë</th><th></th></tr></thead>
@@ -536,24 +629,13 @@
       <table style="max-width:500px"><tbody>${S.shifts.map((s) => `<tr data-sid="${s.id}"><td><input data-sf="name" value="${esc(s.name)}"></td>
         <td style="width:1%"><button class="btn small danger" data-act="s-del" data-id="${s.id}">Fshi</button></td></tr>`).join('')}</tbody></table>
       <button class="btn small" data-act="s-add" style="margin-top:6px">+ Shto turn</button>
-    </div>
-
-    <div class="card"><h2>Ruajtja e të dhënave</h2>
-      <p class="note" style="margin-bottom:10px">Të dhënat ruhen në këtë kompjuter, brenda shfletuesit. Bëni kopje rezervë rregullisht (p.sh. çdo javë) dhe ruajeni skedarin në USB ose email. Me "Ngarko kopjen" i hapni të dhënat në një kompjuter tjetër.</p>
-      <div class="row">
-        <button class="btn primary" data-act="backup">⬇ Shkarko kopjen rezervë</button>
-        <label class="btn">⬆ Ngarko kopjen<input type="file" id="restore" accept=".json,application/json" hidden></label>
-        <button class="btn danger" data-act="reset">Fshi të gjitha të dhënat</button>
-      </div>
     </div>`;
   }
 
   // ---------- events ----------
-  document.getElementById('tabs').addEventListener('click', async (e) => {
-    const b = e.target.closest('button'); if (!b) return;
-    if (tab === 'raporti' && dirty && b.dataset.tab !== 'raporti' && !(await ask('Raporti ka ndryshime të paruajtura. Të largohem pa ruajtur?'))) return;
-    if (tab === 'raporti' && b.dataset.tab !== 'raporti') draft = null;
-    tab = b.dataset.tab; render();
+  $nav.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-go]'); if (!b || b.dataset.go === tab) return;
+    go(b.dataset.go, b.dataset.id);
   });
 
   $app.addEventListener('input', (e) => {
@@ -566,7 +648,8 @@
       const tbl = el.closest('table').id; const i = +tr.dataset.i; const f = el.dataset.f;
       const target = tbl === 't-rows' ? draft.rows[i] : tbl === 't-extras' ? draft.extras[i] : draft.expenses[i];
       if (f === 'name' || f === 'desc') target[f] = el.value;
-      else if (f !== 'productId') target[f] = num(el.value);
+      else if (f !== 'productId' && f !== 'kind') target[f] = num(el.value);
+      if (tbl === 't-exp' && f === 'desc') autoClient(target, tr);
       if (tbl === 't-extras' && f === 'value') { target.qty = null; tr.querySelector('[data-f=qty]').value = ''; }
     } else return;
     dirty = true; recalc();
@@ -574,6 +657,14 @@
 
   $app.addEventListener('change', async (e) => {
     const el = e.target;
+    if (el.id === 'restore') return restore(el.files[0]);
+    if (tab === 'klientet' && el.id === 'c-month') { renderCustomers.month = el.value; return renderCustomers(); }
+    if (tab === 'klient') return customerChange(el);
+    if (tab === 'raporti' && el.dataset.f === 'kind') {
+      const tr = el.closest('tr'); const x = draft.expenses[+tr.dataset.i];
+      x.kind = el.value; x.auto = false; tr.classList.toggle('is-client', x.kind === 'client');
+      dirty = true; return recalc();
+    }
     if (tab === 'raporti') {
       if (el.id === 'photo') { const f = el.files[0]; el.value = ''; return readPhoto(f); }
       if (el.id === 'r-date' || el.id === 'r-shift') {
@@ -592,7 +683,8 @@
     if (tab === 'permbledhje' && el.id === 'm-month') { renderSummary.month = el.value; renderSummary(); return; }
     if (tab === 'gjendja' && el.dataset.stockstart) { product(el.dataset.stockstart).stockStart = num(el.value) || 0; save(); renderStock(); return; }
     if (tab !== 'cilesimet') return;
-    if (el.id === 'restore') return restore(el.files[0]);
+    if (el.id === 'st-name') { if (el.value.trim()) S.name = el.value.trim(); save(); renderNav(); return toast('U ruajt'); }
+    if (el.id === 'st-group') { S.groupId = el.value; save(); renderNav(); return toast('U ruajt'); }
     const ptr = el.closest('tr[data-pid]');
     if (ptr && el.dataset.pf) {
       const p = product(ptr.dataset.pid); const f = el.dataset.pf;
@@ -632,16 +724,20 @@
       case 'add-pump': return addPumpDialog();
       case 'add-extra': draft.extras.push({ id: uid(), productId: null, name: '', qty: null, price: null, value: null }); dirty = true; return renderReport();
       case 'del-extra': draft.extras.splice(i, 1); dirty = true; return renderReport();
-      case 'add-exp': draft.expenses.push({ desc: '', value: null }); dirty = true; renderReport();
+      case 'add-exp': draft.expenses.push({ desc: '', value: null, kind: 'exp' }); dirty = true; renderReport();
         { const ins = document.querySelectorAll('#t-exp tbody input[data-f=desc]'); ins[ins.length - 1]?.focus(); } return;
       case 'del-exp': draft.expenses.splice(i, 1); dirty = true; return renderReport();
       // history
       case 'open': { const r = S.reports.find((x) => x.id === id); draft = structuredClone(r); dirty = false; tab = 'raporti'; return render(); }
+      case 'open-st': return go('station', id);
+      case 'g-add': case 'g-ren': case 'g-del': case 'st-add': case 'st-del':
+      case 'c-add': case 'c-open': case 'c-pay': case 'c-pay-del': case 'c-del': case 'c-csv': case 'c-report':
+        return homeAction(act, b);
       case 'h-del': if (await ask('Ta fshij këtë raport?')) { S.reports = S.reports.filter((r) => r.id !== id); save(); renderHistory(); } return;
       case 'h-all': renderHistory.month = ''; return renderHistory();
       case 'h-csv': return download(`raportet-${renderHistory.month || 'te-gjitha'}.csv`, csv([
-        ['Data', 'Turni', 'Punonjësi', 'Shitje karburant', 'Shitje të tjera', 'Totali shitjeve', 'Shpenzime', 'Për dorëzim'],
-        ...renderHistory.list.slice().reverse().map((r) => { const t = totals(r); return [r.date, shiftName(r.shift), r.employee, t.fuel, t.extras, t.sales, t.expenses, t.net]; }),
+        ['Pika', 'Data', 'Turni', 'Punonjësi', 'Shitje karburant', 'Shitje të tjera', 'Totali shitjeve', 'Shpenzime', 'Klientë', 'Për dorëzim'],
+        ...renderHistory.list.slice().reverse().map((r) => { const t = totals(r); return [S.name, r.date, shiftName(r.shift), r.employee, t.fuel, t.extras, t.sales, t.expenses, t.credit, t.net]; }),
       ]), 'text/csv');
       // stock
       case 'd-add': {
@@ -667,13 +763,13 @@
         if (S.shifts.length < 2) return toast('Duhet të paktën një turn');
         if (S.reports.some((r) => r.shift === id)) return toast('Ky turn ka raporte të ruajtura');
         S.shifts = S.shifts.filter((s) => s.id !== id); save(); return renderSettings();
-      case 'backup': return download(`karburant-kopje-${localDate()}.json`, JSON.stringify(S, null, 1), 'application/json');
+      case 'backup': return download(`karburant-kopje-${localDate()}.json`, JSON.stringify(DB, null, 1), 'application/json');
       case 'demo-reset':
         if (!(await ask('Të rifilloj demon me të dhënat shembull? Ndryshimet tuaja në demo fshihen.'))) return;
-        S = demoState(); save(); draft = null; dirty = false; tab = 'raporti'; return render();
+        DB = demoDB(); S = null; save(); draft = null; dirty = false; return go('pikat');
       case 'reset':
-        if (!(await ask('Do të fshihen TË GJITHA raportet, çmimet dhe furnizimet. Keni bërë kopje rezervë? Shkruani FSHI për të konfirmuar.', { ok: 'Fshi të gjitha', danger: true, typed: 'FSHI' }))) return;
-        S = DEMO ? demoState() : defaults(); save(); draft = null; return renderSettings();
+        if (!(await ask('Do të fshihen TË GJITHA pikat, raportet, klientët dhe furnizimet. Keni bërë kopje rezervë? Shkruani FSHI për të konfirmuar.', { ok: 'Fshi të gjitha', danger: true, typed: 'FSHI' }))) return;
+        DB = DEMO ? demoDB() : emptyDB(); S = null; save(); draft = null; return go('pikat');
     }
   });
 
@@ -682,10 +778,11 @@
     const fr = new FileReader();
     fr.onload = async () => {
       try {
-        const data = JSON.parse(fr.result);
-        if (!Array.isArray(data.products) || !Array.isArray(data.reports)) throw new Error('Skedari nuk është kopje e këtij programi');
-        if (!(await ask(`Kopja ka ${data.reports.length} raporte. Të zëvendësoj të dhënat aktuale?`))) return;
-        S = { ...defaults(), ...data }; save(); draft = null; toast('Të dhënat u ngarkuan'); renderSettings();
+        const data = upgrade(JSON.parse(fr.result));
+        if (!data) throw new Error('Skedari nuk është kopje e këtij programi');
+        const n = data.stations.reduce((a, st) => a + st.reports.length, 0);
+        if (!(await ask(`Kopja ka ${data.stations.length} pika dhe ${n} raporte. Të zëvendësoj të dhënat aktuale?`))) return;
+        DB = data; S = null; save(); draft = null; dirty = false; toast('Të dhënat u ngarkuan'); go('pikat');
       } catch (err) { ask('Ngarkimi dështoi: ' + err.message, { ok: 'Mirë', cancel: null }); }
     };
     fr.readAsText(file);
@@ -931,11 +1028,278 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
         if (slot) Object.assign(slot, { qty: x.qty, price: x.price ?? slot.price, value: val });
         else draft.extras.push({ id: uid(), productId: prod.id, name: prod.name, qty: x.qty, price: x.price ?? prod.price, value: val });
       }
-      draft.expenses = draft.expenses.filter((x) => x.desc || x.value != null).concat(expenses);
+      draft.expenses = draft.expenses.filter((x) => x.desc || x.value != null)
+        .concat(expenses.map((x) => { const c = findCustomer(x.desc); return c ? { ...x, desc: c.name, kind: 'client', customerId: c.id, auto: true } : { ...x, kind: 'exp' }; }));
       if (!draft.employee && data.employee) draft.employee = String(data.employee);
       save(); dirty = true; renderReport(); toast('Numrat u vendosën. Kontrollojini dhe shtypni "Ruaj raportin".');
     });
   }
 
+  // ---------- home: stations by group ----------
+  function stationToday(st) {
+    const today = localDate();
+    const reps = st.reports.filter((r) => r.date === today);
+    const sales = round2(reps.reduce((a, r) => a + totals(r).sales, 0));
+    const last = [...st.reports].sort((a, b) => (a.date + a.shift).localeCompare(b.date + b.shift)).pop();
+    return { n: reps.length, sales, last };
+  }
+  function renderHome() {
+    const loose = DB.stations.filter((st) => !group(st.groupId));
+    const groups = [...DB.groups, ...(loose.length ? [{ id: '', name: 'Pa grup', loose: true }] : [])];
+    const tile = (st) => {
+      const t = stationToday(st);
+      return `<button class="tile" data-act="open-st" data-id="${st.id}">
+        <span class="tile-name">${esc(st.name)}</span>
+        <span class="tile-k">Sot</span><span class="tile-v">${t.n ? fmt(t.sales) : '—'}</span>
+        <span class="tile-meta">${t.n ? `${t.n} ${t.n === 1 ? 'turn i ruajtur' : 'turne të ruajtura'}` : 'Asnjë turn sot'}${t.last ? ` · i fundit ${esc(t.last.date)}` : ''}</span>
+      </button>`;
+    };
+    $app.innerHTML = `${demoBanner()}
+      <div class="row" style="margin-bottom:12px"><h2 class="page-title" style="flex:1">Pikat e karburantit</h2>
+        <button class="btn" data-act="st-add">+ Shto pikë</button>
+        <button class="btn primary" data-act="g-add">+ Shto grup</button></div>
+      ${groups.map((g) => {
+        const sts = g.loose ? loose : DB.stations.filter((st) => st.groupId === g.id);
+        const sum = round2(sts.reduce((a, st) => a + stationToday(st).sales, 0));
+        return `<section class="card group">
+          <div class="row"><h2 style="margin:0;flex:1">${esc(g.name)} <span class="muted small">${sts.length} pika · sot ${fmt(sum)}</span></h2>
+            ${g.loose ? '' : `<button class="btn small" data-act="st-add" data-group="${g.id}">+ Pikë</button>
+            <button class="btn small" data-act="g-ren" data-id="${g.id}">Riemërto</button>
+            <button class="btn small danger" data-act="g-del" data-id="${g.id}">Fshi</button>`}</div>
+          <div class="tiles">${sts.map(tile).join('') || '<p class="muted">Ende pa pika në këtë grup. Shtypni "+ Pikë".</p>'}</div>
+        </section>`;
+      }).join('') || `<div class="card empty"><h2>Filloni me grupin e parë</h2>
+        <p class="muted">Krijoni grupet sipas zonës (p.sh. Durrës, Tiranë, Dibër), pastaj shtoni pikat në secilin grup. Çdo pikë ka raportet, çmimet dhe gjendjen e vet.</p>
+        <button class="btn primary" data-act="g-add">+ Shto grup</button></div>`}
+      <div class="card"><h2>Ruajtja e të dhënave</h2>
+        <p class="note" style="margin-bottom:10px">Të dhënat e të gjitha pikave ruhen në këtë kompjuter, brenda shfletuesit. Bëni kopje rezervë rregullisht (p.sh. çdo javë) dhe ruajeni skedarin në USB ose email. Me "Ngarko kopjen" i hapni të dhënat në një kompjuter tjetër.</p>
+        <div class="row">
+          <button class="btn primary" data-act="backup">⬇ Shkarko kopjen rezervë</button>
+          <label class="btn">⬆ Ngarko kopjen<input type="file" id="restore" accept=".json,application/json" hidden></label>
+          <button class="btn danger" data-act="reset">Fshi të gjitha të dhënat</button>
+        </div>
+      </div>`;
+  }
+
+  // New stations copy products, pumps and shifts from a chosen station, without its reports.
+  async function addStationDialog(groupId) {
+    if (!DB.groups.length) {
+      const name = await ask('Krijoni fillimisht një grup (p.sh. Durrës).', { ok: 'Krijo grupin', input: 'Emri i grupit' });
+      if (!name) return;
+      DB.groups.push({ id: uid(), name }); save();
+    }
+    const html = `<div class="form">
+      <label>Emri i pikës<input type="text" id="ns-name" placeholder="p.sh. Shkozet"></label>
+      <label>Grupi<select id="ns-group">${DB.groups.map((g) => `<option value="${g.id}" ${g.id === groupId ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select></label>
+      <label>Produktet dhe pistoletat<select id="ns-copy"><option value="">Lista standarde (Benz100, Benzine, D1 G, D2, Gaz…)</option>
+        ${DB.stations.map((st) => `<option value="${st.id}">Kopjo nga ${esc(st.name)}</option>`).join('')}</select></label>
+    </div>`;
+    const vals = {};
+    const p = ask('Shto pikë të re', { ok: 'Shto', html });
+    const dlg = document.querySelector('.dialog');
+    const sync = () => Object.assign(vals, { name: dlg.querySelector('#ns-name').value.trim(), group: dlg.querySelector('#ns-group').value, copy: dlg.querySelector('#ns-copy').value });
+    dlg.addEventListener('input', sync); dlg.addEventListener('change', sync); sync();
+    dlg.querySelector('#ns-name').focus();
+    if (!(await p)) return;
+    if (!vals.name) return toast('Shkruani emrin e pikës');
+    const src = station(vals.copy);
+    const base = defaults();
+    if (src) {
+      // Fresh ids keep the two stations independent.
+      const ids = {};
+      base.products = src.products.map((x) => { const id = uid(); ids[x.id] = id; return { ...x, id, stockStart: 0 }; });
+      base.pumps = src.pumps.map((x) => ({ ...x, id: uid(), productId: ids[x.productId] }));
+      base.shifts = structuredClone(src.shifts);
+    }
+    const st = { id: uid(), name: vals.name, groupId: vals.group, ...base };
+    DB.stations.push(st); save(); toast('Pika u shtua');
+    go('station', st.id);
+  }
+
+  async function homeAction(act, b) {
+    const id = b.dataset.id;
+    switch (act) {
+      case 'g-add': {
+        const name = await ask('Emri i grupit (p.sh. Durrës, Tiranë, Dibër)', { ok: 'Shto', input: 'Emri i grupit' });
+        if (!name) return;
+        DB.groups.push({ id: uid(), name }); save(); return renderHome();
+      }
+      case 'g-ren': {
+        const g = group(id);
+        const name = await ask(`Emri i ri për "${g.name}"`, { ok: 'Ruaj', input: g.name });
+        if (!name) return;
+        g.name = name; save(); return renderHome();
+      }
+      case 'g-del':
+        if (DB.stations.some((st) => st.groupId === id)) return ask('Grupi ka pika. Zhvendosini ose fshijini pikat fillimisht (te "Çmimet & Cilësimet" e pikës).', { ok: 'Mirë', cancel: null });
+        DB.groups = DB.groups.filter((g) => g.id !== id); save(); return renderHome();
+      case 'st-add': return addStationDialog(b.dataset.group || DB.groups[0]?.id);
+      case 'st-del': {
+        const n = S.reports.length;
+        if (!(await ask(`Të fshihet pika "${S.name}" me ${n} raporte? Shkruani FSHI për të konfirmuar.`, { ok: 'Fshi pikën', danger: true, typed: 'FSHI' }))) return;
+        DB.stations = DB.stations.filter((st) => st !== S); S = null; draft = null; dirty = false; save(); return go('pikat');
+      }
+      // customers
+      case 'c-add': {
+        const name = await ask('Emri i klientit', { ok: 'Shto', input: 'p.sh. Nedi' });
+        if (!name) return;
+        const c = findCustomer(name) || addCustomer(name); save(); return go('klient', c.id);
+      }
+      case 'c-open': return go('klient', id);
+      case 'c-pay': {
+        const amount = num(document.getElementById('pay-amount').value);
+        if (!amount) return toast('Shkruani shumën e paguar');
+        DB.payments.push({ id: uid(), customerId: custId, date: document.getElementById('pay-date').value || localDate(), amount, note: document.getElementById('pay-note').value.trim() });
+        save(); toast('Pagesa u regjistrua'); return renderCustomer();
+      }
+      case 'c-pay-del':
+        if (!(await ask('Ta fshij këtë pagesë?'))) return;
+        DB.payments = DB.payments.filter((x) => x.id !== id); save(); return renderCustomer();
+      case 'c-del': {
+        const c = customer(custId);
+        if (charges().some((x) => x.customerId === c.id)) return ask(`${c.name} ka borxhe të shënuara në raporte. Fshijini te raportet përkatëse para se të fshini klientin.`, { ok: 'Mirë', cancel: null });
+        if (!(await ask(`Ta fshij klientin ${c.name}?`))) return;
+        DB.customers = DB.customers.filter((x) => x !== c); DB.payments = DB.payments.filter((x) => x.customerId !== c.id); save(); return go('klientet');
+      }
+      case 'c-csv': {
+        const c = customer(custId);
+        return download(`klienti-${c.name}.csv`, csv([[c.name], ['Data', 'Pika', 'Turni', 'Borxh', 'Pagesë', 'Gjendja'],
+          ...ledger(c.id).map((m) => [m.date, m.where, m.shift, m.charge, m.paid, m.balance])]), 'text/csv');
+      }
+      case 'c-report': {
+        const st = station(b.dataset.st); const r = st?.reports.find((x) => x.id === id);
+        if (!r) return toast('Raporti nuk u gjet');
+        await go('station', st.id); draft = structuredClone(r); dirty = false; return renderReport();
+      }
+    }
+  }
+
+  // ---------- customers who pay monthly ----------
+  function findCustomer(name) {
+    const n = norm(name);
+    return n ? DB.customers.find((c) => norm(c.name) === n) : null;
+  }
+  function addCustomer(name) {
+    const c = { id: uid(), name: String(name).trim(), phone: '', note: '' };
+    DB.customers.push(c);
+    return c;
+  }
+  // A known customer's name typed in the expenses marks the row as that customer's credit.
+  function autoClient(x, tr) {
+    const c = findCustomer(x.desc);
+    if (c && x.kind !== 'client') { x.kind = 'client'; x.auto = true; }
+    else if (!c && x.auto) { x.kind = 'exp'; x.auto = false; }
+    tr.classList.toggle('is-client', x.kind === 'client');
+    const sel = tr.querySelector('[data-f=kind]'); if (sel) sel.value = x.kind === 'client' ? 'client' : 'exp';
+  }
+  // Credit lives in the station reports, so editing a report updates the customer page.
+  function charges() {
+    const out = [];
+    for (const st of DB.stations) for (const r of st.reports) for (const x of r.expenses) {
+      if (x.kind === 'client' && x.customerId) {
+        out.push({ customerId: x.customerId, date: r.date, stationId: st.id, where: st.name, shift: (st.shifts.find((s) => s.id === r.shift) || { name: r.shift }).name, value: x.value || 0, reportId: r.id });
+      }
+    }
+    return out;
+  }
+  function ledger(cid) {
+    const moves = [
+      ...charges().filter((x) => x.customerId === cid).map((x) => ({ ...x, charge: x.value, paid: null })),
+      ...DB.payments.filter((x) => x.customerId === cid).map((x) => ({ date: x.date, where: x.note || 'Pagesë', shift: '', charge: null, paid: x.amount, paymentId: x.id })),
+    ].sort((a, b) => a.date.localeCompare(b.date) || (a.paid == null ? -1 : 1));
+    let bal = 0;
+    for (const m of moves) { bal = round2(bal + (m.charge || 0) - (m.paid || 0)); m.balance = bal; }
+    return moves;
+  }
+  function renderCustomers() {
+    const month = renderCustomers.month ||= localDate().slice(0, 7);
+    const all = charges();
+    const q = norm(renderCustomers.q || '');
+    const rows = DB.customers.filter((c) => !q || norm(c.name).includes(q)).map((c) => {
+      const mine = all.filter((x) => x.customerId === c.id);
+      const pays = DB.payments.filter((x) => x.customerId === c.id);
+      const inMonth = round2(mine.filter((x) => x.date.startsWith(month)).reduce((a, x) => a + x.value, 0));
+      const paidMonth = round2(pays.filter((x) => x.date.startsWith(month)).reduce((a, x) => a + x.amount, 0));
+      const balance = round2(mine.reduce((a, x) => a + x.value, 0) - pays.reduce((a, x) => a + x.amount, 0));
+      const last = mine.map((x) => x.date).sort().pop();
+      return { c, inMonth, paidMonth, balance, last, count: mine.filter((x) => x.date.startsWith(month)).length };
+    }).sort((a, b) => b.balance - a.balance || a.c.name.localeCompare(b.c.name));
+    const tot = rows.reduce((a, r) => ({ m: a.m + r.inMonth, p: a.p + r.paidMonth, b: a.b + r.balance }), { m: 0, p: 0, b: 0 });
+    $app.innerHTML = `${demoBanner()}<div class="card">
+      <div class="row"><h2 style="margin:0;flex:1">Klientët me pagesë mujore</h2>
+        <div class="field"><label>Kërko</label><input type="text" id="c-q" value="${esc(renderCustomers.q || '')}" placeholder="Emri"></div>
+        <div class="field"><label>Muaji</label><input type="month" id="c-month" value="${month}"></div>
+        <button class="btn primary" data-act="c-add">+ Shto klient</button></div>
+      <div class="totals" style="margin-top:12px">
+        <div class="stat"><div class="k">Borxhe këtë muaj</div><div class="v">${fmt(tot.m)}</div></div>
+        <div class="stat"><div class="k">Paguar këtë muaj</div><div class="v">${fmt(tot.p)}</div></div>
+        <div class="stat hl"><div class="k">Pa paguar gjithsej</div><div class="v">${fmt(tot.b)}</div></div>
+      </div>
+      <div class="scroll" style="margin-top:12px"><table>
+        <thead><tr><th>Klienti</th><th>Telefoni</th><th class="num">Herë këtë muaj</th><th class="num">Borxh këtë muaj</th><th class="num">Paguar këtë muaj</th><th class="num">Pa paguar gjithsej</th><th>Hera e fundit</th><th></th></tr></thead>
+        <tbody>${rows.map((r) => `<tr>
+          <td><b>${esc(r.c.name)}</b></td><td>${esc(r.c.phone)}</td><td class="num">${r.count}</td>
+          <td class="num">${fmt(r.inMonth)}</td><td class="num">${fmt(r.paidMonth)}</td>
+          <td class="num ${r.balance > 0 ? 'owe' : ''}">${fmt(r.balance)}</td><td>${esc(r.last || '—')}</td>
+          <td><button class="btn small" data-act="c-open" data-id="${r.c.id}">Hap</button></td></tr>`).join('')
+          || '<tr><td colspan="8" class="muted">Ende pa klientë. Shkruani emrin e klientit te "Shpenzime ditore dhe klientë" në raport, ose shtypni "+ Shto klient".</td></tr>'}</tbody>
+      </table></div></div>`;
+  }
+  function renderCustomer() {
+    const c = customer(custId);
+    if (!c) return go('klientet');
+    const moves = ledger(c.id);
+    const bal = moves.length ? moves[moves.length - 1].balance : 0;
+    $app.innerHTML = `<div class="card">
+      <div class="row"><h2 style="margin:0;flex:1"><button class="btn small" data-go-list>← Klientët</button> ${esc(c.name)}</h2>
+        <button class="btn" data-act="c-csv">⬇ Excel (CSV)</button>
+        <button class="btn danger" data-act="c-del">Fshi klientin</button></div>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label>Emri</label><input type="text" id="cu-name" value="${esc(c.name)}"></div>
+        <div class="field"><label>Telefoni</label><input type="text" id="cu-phone" value="${esc(c.phone)}" inputmode="tel"></div>
+        <div class="field" style="flex:1;min-width:160px"><label>Shënim (p.sh. targa, kompania)</label><input type="text" id="cu-note" value="${esc(c.note)}"></div>
+      </div></div>
+    <div class="grid2">
+      <div class="card"><h2>Lëvizjet</h2><div class="scroll"><table>
+        <thead><tr><th>Data</th><th>Pika / shënim</th><th>Turni</th><th class="num">Borxh</th><th class="num">Pagesë</th><th class="num">Gjendja</th><th></th></tr></thead>
+        <tbody>${moves.slice().reverse().map((m) => `<tr><td>${esc(m.date)}</td><td>${esc(m.where)}</td><td>${esc(m.shift)}</td>
+          <td class="num">${fmt(m.charge)}</td><td class="num paid">${fmt(m.paid)}</td><td class="num">${fmt(m.balance)}</td>
+          <td>${m.paymentId ? `<button class="x" data-act="c-pay-del" data-id="${m.paymentId}" title="Fshi pagesën">✕</button>`
+            : `<button class="btn small" data-act="c-report" data-id="${m.reportId}" data-st="${m.stationId}">Raporti</button>`}</td></tr>`).join('')
+          || '<tr><td colspan="7" class="muted">Ende pa lëvizje.</td></tr>'}</tbody>
+      </table></div></div>
+      <div class="card"><h2>Pa paguar: <span class="${bal > 0 ? 'owe' : ''}">${fmt(bal)}</span></h2>
+        <h3>Regjistro pagesën mujore</h3>
+        <div class="form">
+          <label>Data<input type="date" id="pay-date" value="${localDate()}"></label>
+          <label>Shuma<input type="text" id="pay-amount" inputmode="decimal" value="${bal > 0 ? bal : ''}"></label>
+          <label>Shënim<input type="text" id="pay-note" placeholder="p.sh. Pagesa e tetorit"></label>
+          <button class="btn primary" data-act="c-pay">Regjistro pagesën</button>
+        </div>
+        <p class="note">Borxhet shtohen vetë nga raportet e turneve, me datën e raportit. Për të ndryshuar një borxh, hapni raportin.</p>
+      </div></div>`;
+  }
+  function customerChange(el) {
+    const c = customer(custId); if (!c) return;
+    if (el.id === 'cu-name' && el.value.trim()) {
+      const other = findCustomer(el.value);
+      if (other && other !== c) { el.value = c.name; return toast('Ka tashmë një klient me këtë emër'); }
+      c.name = el.value.trim();
+      // Keep the name on the report rows in step.
+      for (const st of DB.stations) for (const r of st.reports) for (const x of r.expenses) if (x.customerId === c.id) x.desc = c.name;
+    } else if (el.id === 'cu-phone') c.phone = el.value.trim();
+    else if (el.id === 'cu-note') c.note = el.value.trim();
+    else return;
+    save(); toast('U ruajt');
+  }
+  $app.addEventListener('input', (e) => {
+    if (tab === 'klientet' && e.target.id === 'c-q') {
+      renderCustomers.q = e.target.value; renderCustomers();
+      const q = document.getElementById('c-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length);
+    }
+  });
+  $app.addEventListener('click', (e) => { if (e.target.closest('[data-go-list]')) go('klientet'); });
+
+  routeFromHash();
   render();
 })();
