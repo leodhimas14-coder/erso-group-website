@@ -109,3 +109,8 @@ table.matrix th,table.matrix td{padding:4px 8px}
 table.matrix tr.ghead th{text-align:center;background:#e3e6eb}
 table.matrix tbody tr:nth-child(even) td{background:#fafbfc}
 td.missing{color:#b8bcc4}
+.stat.diff{min-width:200px}
+.stat.short{border-color:var(--accent);background:var(--accent-soft)}
+.stat.short .v{color:var(--accent)}
+.stat.okay .v{color:var(--ok)}
+.pay-banke h2,.pay-cash h2{font-size:17px}

@@ -6,7 +6,7 @@
   'use strict';
 
   const DEMO = !!window.KARBURANT_DEMO;
-  const KEY = DEMO ? 'erso-karburant-demo2' : 'erso-karburant-v1';
+  const KEY = DEMO ? 'erso-karburant-demo3' : 'erso-karburant-v1';
   const $app = document.getElementById('app');
 
   // ---------- helpers ----------
@@ -157,9 +157,22 @@
     }
     const d = new Date(); d.setDate(d.getDate() - 2);
     db.payments.push({ id: uid(), customerId: db.customers[0].id, date: localDate(d), amount: 10000, note: 'Shembull: pagesë' });
+    // Two workers per station, one paid by bank and one in cash; now and then the till is short.
+    const firsts = ['Arben', 'Ilir', 'Dritan', 'Erion', 'Gentian', 'Klodian', 'Mirel', 'Sokol', 'Fatmir', 'Besnik'];
+    let w = 0; let k = 0;
+    for (const st of db.stations) {
+      const pair = [0, 1].map((j) => ({ id: uid(), name: `${firsts[w++ % firsts.length]} (shembull)`, stationId: st.id,
+        salary: j ? 60000 : 65000, method: j ? 'cash' : 'banke', phone: '' }));
+      db.workers.push(...pair);
+      for (const r of st.reports) {
+        const wk = pair[shiftIdxIn(st, r.shift) % 2];
+        r.workerId = wk.id; r.employee = wk.name;
+        r.cash = round2(totals(r).net - (++k % 6 === 0 ? 500 * (1 + (k % 5)) : 0));
+      }
+    }
     return db;
   }
-  const emptyDB = () => ({ groups: [], stations: [], customers: [], payments: [] });
+  const emptyDB = () => ({ groups: [], stations: [], customers: [], payments: [], workers: [], salaryPaid: {} });
   // Older saves held one station; they become "Pika 1" in a group to rename.
   function upgrade(raw) {
     if (raw && Array.isArray(raw.stations)) return { ...emptyDB(), ...raw };
@@ -208,7 +221,10 @@
     const expenses = round2(rep.expenses.reduce((s, x) => s + (x.kind === 'client' ? 0 : x.value || 0), 0));
     const credit = round2(rep.expenses.reduce((s, x) => s + (x.kind === 'client' ? x.value || 0 : 0), 0));
     const sales = round2(fuel + extras);
-    return { fuel, extras, sales, expenses, credit, net: round2(sales - expenses - credit) };
+    const net = round2(sales - expenses - credit);
+    // Cash counted at hand-over minus what the report says: below zero the worker is short.
+    const diff = rep.cash != null ? round2(rep.cash - net) : null;
+    return { fuel, extras, sales, expenses, credit, net, diff };
   }
   function soldByProduct(reports) {
     const m = {};
@@ -272,6 +288,7 @@
   // view: 'pikat' (home), 'klientet', 'klient' (one customer) or a station tab.
   let tab = 'pikat';
   let custId = null;
+  let workerId = null;
   const STATION_TABS = [['raporti', 'Raporti'], ['historiku', 'Historiku'], ['gjendja', 'Gjendja'], ['permbledhje', 'Përmbledhje'], ['cilesimet', 'Çmimet & Cilësimet']];
   const $nav = document.getElementById('tabs');
 
@@ -291,6 +308,7 @@
       if (S !== st) { S = st; draft = null; }
       tab = 'raporti'; setHash('pika-' + st.id);
     } else if (to === 'klient') { custId = id; tab = 'klient'; setHash('klientet'); }
+    else if (to === 'puntor') { workerId = id; tab = 'puntor'; setHash('puntoret'); }
     else if (STATION_TABS.some(([t]) => t === to) && S) tab = to;
     else { tab = to; if (to === 'pikat') { S = null; setHash(''); } else setHash(to); }
     render(); window.scrollTo(0, 0);
@@ -298,15 +316,16 @@
   function routeFromHash() {
     const h = location.hash.slice(1);
     if (h.startsWith('pika-') && station(h.slice(5))) { S = station(h.slice(5)); tab = 'raporti'; }
-    else if (h === 'klientet' || h === 'litrat') tab = h;
+    else if (h === 'klientet' || h === 'litrat' || h === 'puntoret') tab = h;
   }
 
   function renderNav() {
     const g = S && group(S.groupId);
     const top = `<button data-go="pikat" class="${tab === 'pikat' ? 'active' : ''}">Pikat</button>
       <button data-go="litrat" class="${tab === 'litrat' ? 'active' : ''}">Litrat</button>
-      <button data-go="klientet" class="${tab === 'klientet' || tab === 'klient' ? 'active' : ''}">Klientët</button>`;
-    const st = S && !['pikat', 'litrat', 'klientet', 'klient'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
+      <button data-go="klientet" class="${tab === 'klientet' || tab === 'klient' ? 'active' : ''}">Klientët</button>
+      <button data-go="puntoret" class="${tab === 'puntoret' || tab === 'puntor' ? 'active' : ''}">Punëtorët</button>`;
+    const st = S && !['pikat', 'litrat', 'klientet', 'klient', 'puntoret', 'puntor'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
       ${STATION_TABS.map(([t, l]) => `<button data-go="${t}" class="${tab === t ? 'active' : ''}">${l}</button>`).join('')}`
       : S ? `<button data-go="station" data-id="${S.id}" class="back">↩ ${esc(S.name)}</button>` : '';
     $nav.innerHTML = top + st;
@@ -319,6 +338,8 @@
     else if (tab === 'klientet') renderCustomers();
     else if (tab === 'klient') renderCustomer();
     else if (tab === 'litrat') renderLiters();
+    else if (tab === 'puntoret') renderWorkers();
+    else if (tab === 'puntor') renderWorker();
     else if (tab === 'raporti') renderReport();
     else if (tab === 'historiku') renderHistory();
     else if (tab === 'gjendja') renderStock();
@@ -353,7 +374,8 @@
         <div class="field"><label>Data</label><input type="date" id="r-date" value="${d.date}"></div>
         <div class="field"><label>Turni</label><select id="r-shift">${S.shifts.map((s) =>
           `<option value="${s.id}" ${s.id === d.shift ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></div>
-        <div class="field" style="flex:1;min-width:180px"><label>Punonjësi</label><input type="text" id="r-emp" value="${esc(d.employee)}" placeholder="Emri i punonjësit"></div>
+        <div class="field" style="flex:1;min-width:180px"><label>Punonjësi</label><input type="text" id="r-emp" list="worker-list" value="${esc(d.employee)}" placeholder="Emri i punonjësit"></div>
+        <datalist id="worker-list">${DB.workers.map((w) => `<option value="${esc(w.name)}"></option>`).join('')}</datalist>
         <div class="row no-print">
           <button class="btn primary" data-act="save">💾 Ruaj raportin</button>
           <button class="btn" data-act="prices" title="Vendos çmimet aktuale te ky raport">Çmimet aktuale</button>
@@ -427,6 +449,10 @@
             <div class="stat"><div class="k">Klientë në borxh</div><div class="v" id="s-credit"></div></div>
             <div class="stat hl"><div class="k">Për t'u dorëzuar (shitje − shpenzime − borxhe)</div><div class="v" id="s-net"></div></div>
           </div>
+          <div class="row" style="margin-top:12px">
+            <div class="field"><label>Dorëzuar në arkë (paratë e numëruara)</label><input type="text" id="r-cash" inputmode="decimal" value="${inVal(d.cash)}" placeholder="p.sh. 250000"></div>
+            <div class="stat diff" id="diff-box"><div class="k" id="s-diff-k">Diferenca</div><div class="v" id="s-diff">—</div></div>
+          </div>
           <div class="field" style="margin-top:10px"><label>Shënime</label><input type="text" id="r-note" value="${esc(d.note)}"></div>
         </div>
         <div class="card">
@@ -461,6 +487,12 @@
     const set = (id, v) => { const el = document.getElementById(id); if (el) { el.textContent = fmt(v); el.classList.toggle('neg', v < 0); } };
     set('tot-l', round2(liters)); set('tot-fuel', t.fuel); set('tot-extras', t.extras); set('tot-exp', t.expenses); set('tot-credit', t.credit);
     set('s-fuel', t.fuel); set('s-extras', t.extras); set('s-sales', t.sales); set('s-exp', t.expenses); set('s-credit', t.credit); set('s-net', t.net);
+    const dk = document.getElementById('s-diff');
+    if (dk) {
+      dk.textContent = t.diff == null ? '—' : fmt(t.diff);
+      document.getElementById('s-diff-k').textContent = t.diff == null ? 'Diferenca' : t.diff < 0 ? 'Mangut (i zbritet punonjësit)' : t.diff > 0 ? 'Tepër' : 'Saktë';
+      document.getElementById('diff-box').className = 'stat diff ' + (t.diff < 0 ? 'short' : t.diff != null ? 'okay' : '');
+    }
     const neg = d.rows.filter((r) => (rowCalc(r).liters ?? 0) < 0).length;
     const w = document.getElementById('negwarn');
     if (w) w.innerHTML = neg ? `<div class="warnbox">Kujdes: ${neg} pistoleta kanë "Fundi" më të vogël se "Fillimi" (litra negative). Kontrolloni leximet.</div>` : '';
@@ -482,6 +514,14 @@
       x.customerId = c.id; x.desc = c.name; delete x.auto;
     }
     d.extras = d.extras.filter((x) => x.qty != null || x.value != null);
+    // The shift's worker carries any shortage to the payroll page.
+    const wk = findWorker(d.employee);
+    if (wk) { d.workerId = wk.id; d.employee = wk.name; }
+    else if (d.employee.trim()) {
+      if (await ask(`"${d.employee.trim()}" nuk është te lista e punëtorëve. Ta shtoj? (Paga dhe banka/cash plotësohen te faqja Punëtorët.)`, { ok: 'Po, shtoje', cancel: 'Jo' })) {
+        const nw = addWorker(d.employee, S.id); d.workerId = nw.id; d.employee = nw.name;
+      } else delete d.workerId;
+    } else delete d.workerId;
     if (!d.id) d.id = uid();
     d.savedAt = new Date().toISOString();
     const i = S.reports.findIndex((r) => r.id === d.id);
@@ -501,7 +541,7 @@
       ['Totali shitje të tjera', '', '', t.extras], [],
       ['Shpenzime ditore', 'Lloji', 'Vlera'], ...rep.expenses.map((x) => [x.desc, x.kind === 'client' ? 'Klient' : 'Shpenzim', x.value]),
       ['Totali shpenzime', '', t.expenses], ['Klientë në borxh', '', t.credit], [],
-      ['Totali i shitjeve', t.sales], ['Për t\'u dorëzuar', t.net], ['Shënime', rep.note || ''],
+      ['Totali i shitjeve', t.sales], ['Për t\'u dorëzuar', t.net], ['Dorëzuar në arkë', rep.cash ?? ''], ['Diferenca', t.diff ?? ''], ['Shënime', rep.note || ''],
     ];
     return csv(rows);
   }
@@ -509,20 +549,20 @@
   function renderHistory() {
     const month = renderHistory.month ||= localDate().slice(0, 7);
     const list = sortedReports().filter((r) => !month || r.date.startsWith(month)).reverse();
-    const sum = list.reduce((a, r) => { const t = totals(r); a.sales += t.sales; a.exp += t.expenses; a.credit += t.credit; a.net += t.net; return a; }, { sales: 0, exp: 0, credit: 0, net: 0 });
+    const sum = list.reduce((a, r) => { const t = totals(r); a.sales += t.sales; a.exp += t.expenses; a.credit += t.credit; a.net += t.net; a.diff += t.diff || 0; return a; }, { sales: 0, exp: 0, credit: 0, net: 0, diff: 0 });
     $app.innerHTML = `<div class="card">
       <div class="row"><h2 style="margin:0;flex:1">Historiku i raporteve</h2>
         <div class="field"><label>Muaji</label><input type="month" id="h-month" value="${month}"></div>
         <button class="btn" data-act="h-all">Të gjitha</button>
         <button class="btn" data-act="h-csv">⬇ Excel (CSV)</button></div>
       <div class="scroll" style="margin-top:10px"><table>
-        <thead><tr><th>Data</th><th>Turni</th><th>Punonjësi</th><th class="num">Litra</th><th class="num">Shitje</th><th class="num">Shpenzime</th><th class="num">Klientë</th><th class="num">Për dorëzim</th><th></th></tr></thead>
+        <thead><tr><th>Data</th><th>Turni</th><th>Punonjësi</th><th class="num">Litra</th><th class="num">Shitje</th><th class="num">Shpenzime</th><th class="num">Klientë</th><th class="num">Për dorëzim</th><th class="num">Diferenca</th><th></th></tr></thead>
         <tbody>${list.map((r) => { const t = totals(r); const l = round2(r.rows.reduce((s, x) => s + (rowCalc(x).liters || 0), 0));
           return `<tr><td>${r.date}</td><td>${esc(shiftName(r.shift))}</td><td>${esc(r.employee)}</td>
-          <td class="num">${fmt(l)}</td><td class="num">${fmt(t.sales)}</td><td class="num">${fmt(t.expenses)}</td><td class="num">${fmt(t.credit)}</td><td class="num ${t.net < 0 ? 'neg' : ''}">${fmt(t.net)}</td>
+          <td class="num">${fmt(l)}</td><td class="num">${fmt(t.sales)}</td><td class="num">${fmt(t.expenses)}</td><td class="num">${fmt(t.credit)}</td><td class="num ${t.net < 0 ? 'neg' : ''}">${fmt(t.net)}</td><td class="num ${t.diff < 0 ? 'neg' : ''}">${t.diff == null ? '' : fmt(t.diff)}</td>
           <td><button class="btn small" data-act="open" data-id="${r.id}">Hap</button> <button class="btn small danger" data-act="h-del" data-id="${r.id}">Fshi</button></td></tr>`; }).join('')
-          || '<tr><td colspan="9" class="muted">Nuk ka raporte për këtë periudhë.</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="4">Totali (${list.length} turne)</td><td class="num">${fmt(sum.sales)}</td><td class="num">${fmt(sum.exp)}</td><td class="num">${fmt(sum.credit)}</td><td class="num">${fmt(sum.net)}</td><td></td></tr></tfoot>
+          || '<tr><td colspan="10" class="muted">Nuk ka raporte për këtë periudhë.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="4">Totali (${list.length} turne)</td><td class="num">${fmt(sum.sales)}</td><td class="num">${fmt(sum.exp)}</td><td class="num">${fmt(sum.credit)}</td><td class="num">${fmt(sum.net)}</td><td class="num">${fmt(sum.diff)}</td><td></td></tr></tfoot>
       </table></div></div>`;
     renderHistory.list = list;
   }
@@ -654,6 +694,7 @@
     if (tab !== 'raporti') return;
     const tr = el.closest('tr[data-i]');
     if (el.id === 'r-emp') draft.employee = el.value;
+    else if (el.id === 'r-cash') draft.cash = num(el.value);
     else if (el.id === 'r-note') draft.note = el.value;
     else if (tr && el.dataset.f) {
       const tbl = el.closest('table').id; const i = +tr.dataset.i; const f = el.dataset.f;
@@ -672,6 +713,9 @@
     if (tab === 'litrat') return litersChange(el);
     if (tab === 'klientet' && el.id === 'c-month') { renderCustomers.month = el.value; return renderCustomers(); }
     if (tab === 'klient') return customerChange(el);
+    if (tab === 'puntoret' && el.id === 'w-month') { renderWorkers.month = el.value; return renderWorkers(); }
+    if (tab === 'puntoret' && el.dataset.paid) return togglePaid(el);
+    if (tab === 'puntor') return workerChange(el);
     if (tab === 'raporti' && el.dataset.f === 'kind') {
       const tr = el.closest('tr'); const x = draft.expenses[+tr.dataset.i];
       x.kind = el.value; x.auto = false; tr.classList.toggle('is-client', x.kind === 'client');
@@ -744,6 +788,8 @@
       case 'open-st': return go('station', id);
       case 'l-csv': return download(`litrat-${renderLiters.o.mode === 'dite' ? renderLiters.o.date : renderLiters.o.month}.csv`, csv(renderLiters.csv), 'text/csv');
       case 'g-add': case 'g-ren': case 'g-del': case 'st-add': case 'st-del':
+      case 'w-add': case 'w-open': case 'w-del': case 'w-report':
+        return workerAction(act, b);
       case 'c-add': case 'c-open': case 'c-pay': case 'c-pay-del': case 'c-del': case 'c-csv': case 'c-report':
         return homeAction(act, b);
       case 'h-del': if (await ask('Ta fshij këtë raport?')) { S.reports = S.reports.filter((r) => r.id !== id); save(); renderHistory(); } return;
@@ -1433,6 +1479,147 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
     else return;
     renderLiters();
   }
+
+  // ---------- workers: fixed pay by bank or in cash, minus till shortages ----------
+  function findWorker(name) {
+    const n = norm(name);
+    return n ? DB.workers.find((w) => norm(w.name) === n) : null;
+  }
+  function addWorker(name, stationId) {
+    const w = { id: uid(), name: String(name).trim(), stationId: stationId || '', salary: null, method: 'cash', phone: '' };
+    DB.workers.push(w);
+    return w;
+  }
+  function shortages(wid, month) {
+    const out = [];
+    for (const st of DB.stations) for (const r of st.reports) {
+      if (r.workerId !== wid || !r.date.startsWith(month)) continue;
+      const t = totals(r);
+      if (t.diff != null && t.diff < 0) out.push({ date: r.date, where: st.name, stationId: st.id, shift: (st.shifts.find((x) => x.id === r.shift) || { name: r.shift }).name, diff: t.diff, reportId: r.id });
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date));
+  }
+  function payroll(month) {
+    return DB.workers.map((w) => {
+      const sh = shortages(w.id, month);
+      const short = round2(-sh.reduce((a, x) => a + x.diff, 0));
+      return { w, short, count: sh.length, pay: round2((w.salary || 0) - short), paid: DB.salaryPaid?.[month]?.[w.id] };
+    });
+  }
+  const stationName = (id) => station(id)?.name || '—';
+
+  function renderWorkers() {
+    const month = renderWorkers.month ||= localDate().slice(0, 7);
+    const rows = payroll(month);
+    const part = (method, title, icon) => {
+      const list = rows.filter((r) => (r.w.method === 'banke' ? 'banke' : 'cash') === method).sort((a, b) => a.w.name.localeCompare(b.w.name));
+      const tot = list.reduce((a, r) => ({ s: a.s + (r.w.salary || 0), m: a.m + r.short, p: a.p + r.pay }), { s: 0, m: 0, p: 0 });
+      return `<div class="card pay-${method}"><h2>${icon} ${title} <span class="muted small">${list.length} punëtorë</span></h2>
+        <div class="scroll"><table>
+          <thead><tr><th>Punëtori</th><th>Pika</th><th class="num">Paga fikse</th><th class="num">Mangut</th><th class="num">Për t'u paguar</th><th>Paguar</th><th></th></tr></thead>
+          <tbody>${list.map((r) => `<tr>
+            <td><b>${esc(r.w.name)}</b></td><td>${esc(stationName(r.w.stationId))}</td>
+            <td class="num">${r.w.salary == null ? '<span class="muted">pa vendosur</span>' : fmt(r.w.salary)}</td>
+            <td class="num ${r.short ? 'neg' : ''}">${r.short ? `−${fmt(r.short)} <span class="muted small">(${r.count} herë)</span>` : '0.00'}</td>
+            <td class="num"><b class="${r.pay < 0 ? 'neg' : ''}">${fmt(r.pay)}</b></td>
+            <td><label class="check"><input type="checkbox" data-paid="${r.w.id}" ${r.paid ? 'checked' : ''}> ${r.paid ? esc(r.paid) : ''}</label></td>
+            <td><button class="btn small" data-act="w-open" data-id="${r.w.id}">Hap</button></td></tr>`).join('')
+            || `<tr><td colspan="7" class="muted">Asnjë punëtor me pagë ${method === 'banke' ? 'në bankë' : 'cash'}.</td></tr>`}</tbody>
+          <tfoot><tr><td colspan="2">Totali</td><td class="num">${fmt(tot.s)}</td><td class="num">${tot.m ? '−' + fmt(tot.m) : '0.00'}</td><td class="num">${fmt(tot.p)}</td><td colspan="2"></td></tr></tfoot>
+        </table></div></div>`;
+    };
+    const sum = (m) => round2(rows.filter((r) => (r.w.method === 'banke') === (m === 'banke')).reduce((a, r) => a + r.pay, 0));
+    const short = round2(rows.reduce((a, r) => a + r.short, 0));
+    $app.innerHTML = `${demoBanner()}<div class="card">
+      <div class="row"><h2 style="margin:0;flex:1">Punëtorët dhe pagat</h2>
+        <div class="field"><label>Muaji</label><input type="month" id="w-month" value="${month}"></div>
+        <button class="btn primary" data-act="w-add">+ Shto punëtor</button></div>
+      <div class="totals" style="margin-top:12px">
+        <div class="stat"><div class="k">🏦 Për t'u paguar me bankë</div><div class="v">${fmt(sum('banke'))}</div></div>
+        <div class="stat"><div class="k">💵 Për t'u paguar cash</div><div class="v">${fmt(sum('cash'))}</div></div>
+        <div class="stat ${short ? 'short' : ''}"><div class="k">Mangut këtë muaj (zbritet nga pagat)</div><div class="v">${short ? '−' + fmt(short) : '0.00'}</div></div>
+      </div>
+      <p class="note">Për t'u paguar = paga fikse − mangut. Mangut del vetë nga raportet: kur "Dorëzuar në arkë" është më pak se "Për t'u dorëzuar", diferenca i shkon punonjësit të atij turni.</p></div>
+      ${part('banke', 'Banka', '🏦')}${part('cash', 'Cash', '💵')}`;
+  }
+
+  function renderWorker() {
+    const w = DB.workers.find((x) => x.id === workerId);
+    if (!w) return go('puntoret');
+    const month = renderWorkers.month ||= localDate().slice(0, 7);
+    const sh = shortages(w.id, month);
+    const short = round2(-sh.reduce((a, x) => a + x.diff, 0));
+    const pay = round2((w.salary || 0) - short);
+    $app.innerHTML = `<div class="card">
+      <div class="row"><h2 style="margin:0;flex:1"><button class="btn small" data-go-workers>← Punëtorët</button> ${esc(w.name)}</h2>
+        <button class="btn danger" data-act="w-del" data-id="${w.id}">Fshi punëtorin</button></div>
+      <div class="row" style="margin-top:10px">
+        <div class="field"><label>Emri</label><input type="text" id="wk-name" value="${esc(w.name)}"></div>
+        <div class="field"><label>Pika</label><select id="wk-station"><option value="">—</option>${DB.stations.map((st) => `<option value="${st.id}" ${st.id === w.stationId ? 'selected' : ''}>${esc(st.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Paga fikse mujore</label><input type="text" id="wk-salary" inputmode="decimal" value="${inVal(w.salary)}" placeholder="p.sh. 60000"></div>
+        <div class="field"><label>Paguhet me</label><select id="wk-method"><option value="banke">🏦 Bankë</option><option value="cash" ${w.method === 'banke' ? '' : 'selected'}>💵 Cash</option></select></div>
+        <div class="field"><label>Telefoni</label><input type="text" id="wk-phone" inputmode="tel" value="${esc(w.phone)}"></div>
+      </div></div>
+    <div class="grid2">
+      <div class="card"><div class="row"><h2 style="margin:0;flex:1">Herët që ka dalë mangut</h2>
+          <div class="field"><label>Muaji</label><input type="month" id="wk-month" value="${month}"></div></div>
+        <div class="scroll" style="margin-top:10px"><table>
+          <thead><tr><th>Data</th><th>Pika</th><th>Turni</th><th class="num">Mangut</th><th></th></tr></thead>
+          <tbody>${sh.map((x) => `<tr><td>${esc(x.date)}</td><td>${esc(x.where)}</td><td>${esc(x.shift)}</td><td class="num neg">${fmt(x.diff)}</td>
+            <td><button class="btn small" data-act="w-report" data-id="${x.reportId}" data-st="${x.stationId}">Raporti</button></td></tr>`).join('')
+            || '<tr><td colspan="5" class="muted">Asnjë mangut këtë muaj.</td></tr>'}</tbody>
+        </table></div></div>
+      <div class="card"><h2>Paga e muajit ${esc(month)}</h2>
+        <table><tbody>
+          <tr><td>Paga fikse</td><td class="num">${fmt(w.salary || 0)}</td></tr>
+          <tr><td>Mangut (${sh.length} herë)</td><td class="num neg">${short ? '−' + fmt(short) : '0.00'}</td></tr>
+        </tbody><tfoot><tr><td>Për t'u paguar ${w.method === 'banke' ? 'me bankë' : 'cash'}</td><td class="num ${pay < 0 ? 'neg' : ''}">${fmt(pay)}</td></tr></tfoot></table>
+        ${pay < 0 ? '<div class="warnbox">Mangut është më shumë se paga: punonjësi i detyrohet pikës këtë shumë.</div>' : ''}
+      </div></div>`;
+  }
+
+  function workerChange(el) {
+    const w = DB.workers.find((x) => x.id === workerId); if (!w) return;
+    if (el.id === 'wk-month') { renderWorkers.month = el.value; return renderWorker(); }
+    if (el.id === 'wk-name' && el.value.trim()) {
+      const other = findWorker(el.value);
+      if (other && other !== w) { el.value = w.name; return toast('Ka tashmë një punëtor me këtë emër'); }
+      w.name = el.value.trim();
+      for (const st of DB.stations) for (const r of st.reports) if (r.workerId === w.id) r.employee = w.name;
+    } else if (el.id === 'wk-station') w.stationId = el.value;
+    else if (el.id === 'wk-salary') w.salary = num(el.value);
+    else if (el.id === 'wk-method') w.method = el.value;
+    else if (el.id === 'wk-phone') w.phone = el.value.trim();
+    else return;
+    save(); toast('U ruajt'); renderWorker();
+  }
+  function togglePaid(el) {
+    const month = renderWorkers.month;
+    DB.salaryPaid ||= {};
+    const m = (DB.salaryPaid[month] ||= {});
+    if (el.checked) m[el.dataset.paid] = localDate(); else delete m[el.dataset.paid];
+    save(); renderWorkers();
+  }
+  async function workerAction(act, b) {
+    const id = b.dataset.id;
+    if (act === 'w-add') {
+      const name = await ask('Emri i punëtorit', { ok: 'Shto', input: 'p.sh. Fabio Asqeri' });
+      if (!name) return;
+      const w = findWorker(name) || addWorker(name, S?.id); save(); return go('puntor', w.id);
+    }
+    if (act === 'w-open') return go('puntor', id);
+    if (act === 'w-del') {
+      const w = DB.workers.find((x) => x.id === id);
+      if (!(await ask(`Ta fshij punëtorin ${w.name}? Raportet e tij mbeten me emrin e tij.`))) return;
+      DB.workers = DB.workers.filter((x) => x !== w); save(); return go('puntoret');
+    }
+    if (act === 'w-report') {
+      const st = station(b.dataset.st); const r = st?.reports.find((x) => x.id === id);
+      if (!r) return toast('Raporti nuk u gjet');
+      await go('station', st.id); draft = structuredClone(r); dirty = false; return renderReport();
+    }
+  }
+  $app.addEventListener('click', (e) => { if (e.target.closest('[data-go-workers]')) go('puntoret'); });
 
   routeFromHash();
   render();
