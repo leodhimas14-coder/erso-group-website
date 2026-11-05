@@ -39,7 +39,20 @@
   const cap = (name) => (caps[name] ||= (window.claude?.use ? window.claude.use(name).catch(() => null) : Promise.resolve(null)));
   const inViewer = !!window.claude?.use;
 
+  // Inside the Android app the page talks to Java through window.KarburantiAndroid:
+  // files go to Downloads/Karburanti and printing opens Android's print / save-as-PDF screen.
+  const android = window.KarburantiAndroid || null;
+  function printPage() {
+    if (android) android.print(document.title || 'Karburanti');
+    else window.print();
+  }
+  window.__karburantiDirty = () => !!dirty;
+
   async function download(name, text, type) {
+    if (android) {
+      const r = android.saveFile(name, text, type || 'text/plain');
+      return toast(r === 'ok' ? `U ruajt te Downloads/Karburanti/${name}` : 'Skedari nuk u ruajt: ' + r);
+    }
     const dl = await cap('downloads');
     if (dl) {
       try { await dl.save({ filename: name, data: text }); toast('Skedari u shkarkua'); }
@@ -328,7 +341,8 @@
     const st = S && !['pikat', 'litrat', 'klientet', 'klient', 'puntoret', 'puntor'].includes(tab) ? `<span class="crumb">${esc(g?.name || 'Pa grup')} › <b>${esc(S.name)}</b></span>
       ${STATION_TABS.map(([t, l]) => `<button data-go="${t}" class="${tab === t ? 'active' : ''}">${l}</button>`).join('')}`
       : S ? `<button data-go="station" data-id="${S.id}" class="back">↩ ${esc(S.name)}</button>` : '';
-    $nav.innerHTML = top + st;
+    // Android has no Ctrl+P, so every page gets a print / PDF button there.
+    $nav.innerHTML = top + st + (android ? '<button data-print class="print-btn">🖨 PDF</button>' : '');
   }
 
   // ---------- views ----------
@@ -685,6 +699,7 @@
 
   // ---------- events ----------
   $nav.addEventListener('click', (e) => {
+    if (e.target.closest('[data-print]')) return printPage();
     const b = e.target.closest('button[data-go]'); if (!b || b.dataset.go === tab) return;
     go(b.dataset.go, b.dataset.id);
   });
@@ -769,7 +784,7 @@
     switch (act) {
       // report
       case 'save': return saveDraft();
-      case 'print': return window.print();
+      case 'print': return printPage();
       case 'csv': return download(`raporti-${draft.date}-${draft.shift}.csv`, reportCsv(draft), 'text/csv');
       case 'prices':
         draft.rows.forEach((r) => { const pm = S.pumps.find((x) => x.id === r.pumpId); r.price = pm ? pumpPrice(pm) : product(r.productId)?.price ?? r.price; });

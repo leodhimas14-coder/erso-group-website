@@ -97,3 +97,15 @@ Dosja `desktop/` e paketon të njëjtin program si program Windows me instalues 
 - **Çinstalimi** nuk i fshin të dhënat.
 
 Për ta ndërtuar (në Windows, ose në Linux me Wine): `cd desktop && npm install && npm run dist`. Instaluesi del te `desktop/dist/`. Para çdo versioni të ri, rritni `version` te `desktop/package.json`.
+
+## 9. Aplikacioni për tabletë / telefon Android (HyperOS, MIUI etj.)
+
+Dosja `android/` e paketon programin si aplikacion Android (`Karburanti-<versioni>.apk`, rreth 70 KB). Aplikacioni punon pa internet dhe i ruan të dhënat brenda tij. Kur ka internet, lexon edhe fotot përmes faqes.
+
+- **Shkarkimi:** `shkarko/Karburanti-1.0.0.apk` në këtë repo.
+- **PDF / Printo:** butoni **🖨 PDF** lart djathtas, në çdo faqe.
+- **Skedarët** (Excel CSV, kopja rezervë) ruhen te **Downloads/Karburanti**.
+- **Versioni i ri:** instalohet mbi të vjetrin dhe të dhënat mbeten, por vetëm nëse nënshkruhet me të njëjtin çelës. Çelësi (`karburanti.keystore` dhe `karburanti.keystore.pass`) **nuk** është në GitHub. Ruajeni veç dhe vendoseni te `android/` kur ndërtoni.
+- **Kujdes:** nëse e çinstaloni aplikacionin, Android i fshin të dhënat e tij. Bëni kopje rezervë para çinstalimit.
+
+Ndërtimi: `ANDROID_HOME=/rruga/te/sdk android/build.sh 1.0.1 2`. Kërkon JDK 17+, build-tools 35.0.0 dhe platforms;android-35.

@@ -114,3 +114,4 @@ td.missing{color:#b8bcc4}
 .stat.short .v{color:var(--accent)}
 .stat.okay .v{color:var(--ok)}
 .pay-banke h2,.pay-cash h2{font-size:17px}
+.tabs .print-btn{margin-left:auto;color:#fff;border-color:#3a3d45}
