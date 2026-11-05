@@ -994,6 +994,8 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
     if (!reader) {
       const msg = inViewer || DEMO
         ? 'Leximi i fotos punon kur demoja hapet brenda claude.ai me llogarinë tuaj. Hyni në claude.ai në këtë shfletues dhe hapeni lidhjen përsëri.'
+        : location.protocol === 'file:'
+        ? 'Leximi i fotos kërkon internet, ndaj nuk punon te programi pa internet. Shkruani numrat me dorë: të gjitha llogaritjet bëhen vetë.'
         : 'Leximi i fotos nuk është aktivizuar ende në këtë faqe. Duhet vendosur çelësi i Anthropic te Netlify (shih udhëzimet te NETLIFY.md, seksioni 6). Deri atëherë numrat shkruhen me dorë.';
       return ask(msg, { ok: 'Mirë', cancel: null });
     }
