@@ -1,6 +1,7 @@
 // Builds a single-file copy of the fuel app (site/karburant/karburanti-offline.html) that
 // opens by double-click with no internet. Netlify runs it on every deploy.
-// `node scripts/build-karburant.js --demo <out.html>` writes the demo page published on claude.ai.
+// `node scripts/build-karburant.js --demo <out.html>` writes the demo page published on claude.ai,
+// `--desktop <out.html>` the page inside the Windows program (desktop/).
 // On Netlify, URL is the site's address: the offline file uses it to read photos when online.
 const fs = require('fs');
 const path = require('path');
@@ -14,6 +15,7 @@ const js = read('app.js').replace(/<\/script/gi, '<\\/script');
 const body = html.slice(html.indexOf('<header'), html.indexOf('<script src'));
 
 const demoAt = process.argv.indexOf('--demo');
+const deskAt = process.argv.indexOf('--desktop');
 let out;
 let page;
 if (demoAt > 0) {
@@ -30,7 +32,8 @@ ${js}
 </script>
 `;
 } else {
-  out = path.join(dir, 'karburanti-offline.html');
+  out = deskAt > 0 ? path.resolve(process.argv[deskAt + 1]) : path.join(dir, 'karburanti-offline.html');
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   const icon = 'data:image/png;base64,' + fs.readFileSync(path.join(dir, 'icon-192.png')).toString('base64');
   page = `<!DOCTYPE html>
 <html lang="sq">

@@ -87,3 +87,13 @@ Dy mënyra, zgjidhni njërën:
 - **Skedari pa internet:** te faqja "Pikat" shtypni **"Shkarko skedarin pa internet"**. Ruani `Karburanti.html` në Desktop dhe hapeni me dy klikime, gjithmonë me të njëjtin shfletues. Gjithçka punon pa internet. Kur laptopi lidhet me Wi-Fi, edhe leximi i fotove punon përmes faqes suaj: skedari i shkarkuar nga faqja e di adresën vetë, ndërsa te një kopje e marrë ndryshe adresa shkruhet një herë te "Pikat" → "Leximi i fotove".
 
 Secila mënyrë i mban të dhënat veç. Për t'i kaluar nga njëra te tjetra, përdorni "Shkarko kopjen rezervë" dhe "Ngarko kopjen".
+
+## 8. Programi për Windows (pa Chrome)
+
+Dosja `desktop/` e paketon të njëjtin program si program Windows me instalues (`Karburanti-Instalo-<versioni>.exe`). Instaluesi vendos ikonën **Karburanti** në Desktop dhe në Start. Programi hapet në dritaren e vet, pa Chrome dhe pa internet. Të dhënat ruhen te `%APPDATA%\Karburanti`: menyja **Ndihmë → Ku ruhen të dhënat** e hap atë dosje.
+
+- **Ruaj si PDF:** menyja **Skedari → Ruaj faqen si PDF…** (Ctrl+Shift+P). **Printo:** Ctrl+P.
+- **Versioni i ri:** instaloni instaluesin e ri mbi të vjetrin. Të dhënat mbeten.
+- **Çinstalimi** nuk i fshin të dhënat.
+
+Për ta ndërtuar (në Windows, ose në Linux me Wine): `cd desktop && npm install && npm run dist`. Instaluesi del te `desktop/dist/`. Para çdo versioni të ri, rritni `version` te `desktop/package.json`.

@@ -1,0 +1,60 @@
+{
+  "name": "karburanti",
+  "productName": "Karburanti",
+  "version": "1.0.0",
+  "description": "Raporti ditor i shitjeve të karburantit: pikat, litrat, klientët dhe punëtorët.",
+  "author": "ERSO GROUP SHPK",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "app": "node ../scripts/build-karburant.js --desktop app/index.html",
+    "start": "npm run app && electron .",
+    "dist": "npm run app && electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "44.9.2",
+    "electron-builder": "26.17.0"
+  },
+  "build": {
+    "appId": "al.ersogroup.karburanti",
+    "productName": "Karburanti",
+    "copyright": "ERSO GROUP SHPK",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "icon.png",
+      "app/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.png",
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Karburanti",
+      "artifactName": "Karburanti-Instalo-${version}.exe",
+      "deleteAppDataOnUninstall": false,
+      "installerLanguages": [
+        "sq_AL"
+      ],
+      "language": "1052"
+    },
+    "publish": null,
+    "compression": "maximum"
+  }
+}
