@@ -1,6 +1,7 @@
 // Builds a single-file copy of the fuel app (site/karburant/karburanti-offline.html) that
 // opens by double-click with no internet. Netlify runs it on every deploy.
 // `node scripts/build-karburant.js --demo <out.html>` writes the demo page published on claude.ai.
+// On Netlify, URL is the site's address: the offline file uses it to read photos when online.
 const fs = require('fs');
 const path = require('path');
 
@@ -43,7 +44,8 @@ ${css}
 </style>
 </head>
 <body>
-${body}<script>
+${body}<script>window.KARBURANT_SITE = ${JSON.stringify(process.env.URL || '')};</script>
+<script>
 ${js}
 </script>
 </body>

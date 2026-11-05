@@ -710,6 +710,7 @@
   $app.addEventListener('change', async (e) => {
     const el = e.target;
     if (el.id === 'restore') return restore(el.files[0]);
+    if (el.id === 'site-addr') { el.value = setSiteAddress(el.value); return toast(el.value ? 'Adresa u ruajt' : 'Adresa u fshi'); }
     if (tab === 'litrat') return litersChange(el);
     if (tab === 'klientet' && el.id === 'c-month') { renderCustomers.month = el.value; return renderCustomers(); }
     if (tab === 'klient') return customerChange(el);
@@ -915,17 +916,37 @@
   // ---------- reading a report from a photo ----------
   // Two ways to reach Claude: inside the claude.ai viewer the `sample` capability (the viewer's
   // own account); on the website the /api/lexo-foto edge function (the station's API key).
+  // The program on the laptop (a file) has no server of its own: when the laptop is online it
+  // sends photos to the website's /api/lexo-foto. The address comes with the file downloaded
+  // from the website, or is typed once on the home page.
+  const SITE_KEY = 'erso-karburant-site';
+  const isFile = location.protocol === 'file:';
+  function siteAddress() {
+    let a = '';
+    try { a = localStorage.getItem(SITE_KEY) || ''; } catch (e) { /* private window */ }
+    return (a || window.KARBURANT_SITE || '').trim().replace(/\/+$/, '');
+  }
+  function setSiteAddress(v) {
+    let a = String(v || '').trim().replace(/\/+$/, '');
+    if (a && !/^https?:\/\//i.test(a)) a = 'https://' + a;
+    try { if (a) localStorage.setItem(SITE_KEY, a); else localStorage.removeItem(SITE_KEY); } catch (e) { /* ignore */ }
+    return a;
+  }
+  const apiUrl = () => (isFile ? siteAddress() : '') + '/api/lexo-foto';
+
   async function photoReader() {
     const sample = await cap('sample');
     const lim = sample ? await sample.limits().catch(() => null) : null;
     if (lim?.images) return { kind: 'sample', sample };
-    if (inViewer || DEMO || location.protocol === 'file:') return null;
+    if (inViewer || DEMO) return null;
+    if (isFile && !siteAddress()) return { kind: 'noaddr' };
+    if (navigator.onLine === false) return { kind: 'offline' };
     try {
-      const r = await fetch('/api/lexo-foto', { cache: 'no-store' });
+      const r = await fetch(apiUrl(), { cache: 'no-store' });
       const j = r.ok ? await r.json() : null;
       if (j?.configured) return { kind: 'server', pin: j.pin };
-    } catch (e) { /* not deployed */ }
-    return null;
+      return { kind: r.ok || r.status === 404 ? 'notconfigured' : 'unreachable' };
+    } catch (e) { return { kind: isFile ? 'unreachable' : 'notconfigured' }; }
   }
 
   function photoPrompt() {
@@ -979,7 +1000,7 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
   }
   async function askServer(pin, file, signal) {
     const image = await shrink(file);
-    const r = await fetch('/api/lexo-foto', { method: 'POST', signal, headers: { 'content-type': 'application/json' },
+    const r = await fetch(apiUrl(), { method: 'POST', signal, headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ pin, image, mediaType: 'image/jpeg', prompt: photoPrompt() }) });
     const j = await r.json().catch(() => ({ error: 'upstream_error' }));
     if (j.error === 'bad_pin') { try { localStorage.removeItem(PIN_KEY); } catch (e) { /* ignore */ } throw { code: 'bad_pin' }; }
@@ -991,12 +1012,20 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
   async function readPhoto(file) {
     if (!file) return;
     const reader = await photoReader();
-    if (!reader) {
-      const msg = inViewer || DEMO
+    if (reader?.kind === 'noaddr') {
+      const a = await ask('Leximi i fotos punon kur laptopi ka internet, përmes faqes suaj. Shkruani një herë adresën e faqes (p.sh. ersogroup.al). Programi e mban mend.', { ok: 'Ruaj dhe vazhdo', input: 'p.sh. ersogroup.al' });
+      if (!a) return;
+      setSiteAddress(a);
+      return readPhoto(file);
+    }
+    if (!reader || reader.kind !== 'sample' && reader.kind !== 'server') {
+      const msg = !reader
         ? 'Leximi i fotos punon kur demoja hapet brenda claude.ai me llogarinë tuaj. Hyni në claude.ai në këtë shfletues dhe hapeni lidhjen përsëri.'
-        : location.protocol === 'file:'
-        ? 'Leximi i fotos kërkon internet, ndaj nuk punon te programi pa internet. Shkruani numrat me dorë: të gjitha llogaritjet bëhen vetë.'
-        : 'Leximi i fotos nuk është aktivizuar ende në këtë faqe. Duhet vendosur çelësi i Anthropic te Netlify (shih udhëzimet te NETLIFY.md, seksioni 6). Deri atëherë numrat shkruhen me dorë.';
+        : reader.kind === 'offline'
+        ? 'Laptopi nuk është i lidhur me internetin. Lidheni me Wi-Fi dhe provoni përsëri, ose shkruani numrat me dorë: të gjitha llogaritjet bëhen vetë edhe pa internet.'
+        : reader.kind === 'unreachable'
+        ? `Faqja ${siteAddress()} nuk u gjet. Kontrolloni internetin, ose adresën te faqja "Pikat" → "Leximi i fotove". Deri atëherë numrat shkruhen me dorë.`
+        : 'Leximi i fotos nuk është aktivizuar ende te faqja. Duhet vendosur çelësi i Anthropic te Netlify (shih udhëzimet te NETLIFY.md, seksioni 6). Deri atëherë numrat shkruhen me dorë.';
       return ask(msg, { ok: 'Mirë', cancel: null });
     }
     const pin = reader.kind === 'server' && reader.pin ? await getPin() : '';
@@ -1150,6 +1179,12 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
   const onWebsite = !inViewer && /^https?:$/.test(location.protocol);
   const installed = () => window.matchMedia?.('(display-mode: standalone)').matches;
   function installCard() {
+    if (isFile && !DEMO) {
+      return `<div class="card"><h2>📷 Leximi i fotove (kur ka internet)</h2>
+        <div class="row"><div class="field" style="flex:1;min-width:220px"><label>Adresa e faqes suaj</label>
+          <input type="text" id="site-addr" value="${esc(siteAddress())}" placeholder="p.sh. ersogroup.al"></div></div>
+        <p class="note">Programi punon pa internet. Kur laptopi lidhet me Wi-Fi, fotot dërgohen për lexim te kjo faqe. Të dhënat e tjera nuk dërgohen askund.</p></div>`;
+    }
     if (DEMO || !onWebsite || installed()) return '';
     return `<div class="card install"><h2>💻 Programi në laptop</h2>
       <div class="row">

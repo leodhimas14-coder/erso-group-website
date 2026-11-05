@@ -3,15 +3,24 @@
 // is a shared code staff type once so strangers can't spend the key.
 // The answer can take a minute, so the response streams: spaces keep the connection open
 // and the JSON result follows (leading whitespace is valid JSON).
+// The program saved on a laptop is a local file (origin "null"), so the endpoint allows any
+// origin; the PIN is what keeps strangers out.
 import Anthropic from "npm:@anthropic-ai/sdk";
 
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
-const json = (body, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
+  "access-control-allow-headers": "content-type",
+  "access-control-max-age": "86400",
+};
+const HEADERS = { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...CORS };
+const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: HEADERS });
 
 export default async (req) => {
   const apiKey = Netlify.env.get("ANTHROPIC_API_KEY");
   const pin = Netlify.env.get("KARBURANT_PIN") || "";
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method === "GET") return json({ configured: !!apiKey, pin: !!pin });
   if (req.method !== "POST") return json({ error: "bad_request" }, 405);
   if (!apiKey) return json({ error: "not_configured" }, 503);
@@ -61,7 +70,7 @@ export default async (req) => {
       ctrl.close();
     },
   });
-  return new Response(stream, { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  return new Response(stream, { headers: HEADERS });
 };
 
 export const config = { path: "/api/lexo-foto" };

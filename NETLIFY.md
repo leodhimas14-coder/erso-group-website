@@ -84,6 +84,6 @@ Pistoletat ose artikujt që fotoja i ka, por sistemi jo, shtohen vetë. Mund t'i
 Dy mënyra, zgjidhni njërën:
 
 - **Instalo si program (rekomandohet):** hapni `https://adresa-juaj/karburant/` me **Chrome** ose **Edge** dhe shtypni **"Instalo si program"** (ose ikonën e instalimit në shiritin e adresës). Programi del në Desktop dhe në Start, hapet në dritaren e vet dhe punon edhe pa internet. Përditësimet vijnë vetë kur ka internet.
-- **Skedari pa internet:** te faqja "Pikat" shtypni **"Shkarko skedarin pa internet"**. Ruani `Karburanti.html` në Desktop dhe hapeni me dy klikime, gjithmonë me të njëjtin shfletues. Leximi i fotove nuk punon në këtë mënyrë.
+- **Skedari pa internet:** te faqja "Pikat" shtypni **"Shkarko skedarin pa internet"**. Ruani `Karburanti.html` në Desktop dhe hapeni me dy klikime, gjithmonë me të njëjtin shfletues. Gjithçka punon pa internet. Kur laptopi lidhet me Wi-Fi, edhe leximi i fotove punon përmes faqes suaj: skedari i shkarkuar nga faqja e di adresën vetë, ndërsa te një kopje e marrë ndryshe adresa shkruhet një herë te "Pikat" → "Leximi i fotove".
 
 Secila mënyrë i mban të dhënat veç. Për t'i kaluar nga njëra te tjetra, përdorni "Shkarko kopjen rezervë" dhe "Ngarko kopjen".
