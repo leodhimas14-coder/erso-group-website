@@ -1,6 +1,6 @@
 [build]
   publish = "site"
-  command = "node scripts/build-catalog.js"
+  command = "node scripts/build-catalog.js && node scripts/build-karburant.js"
 
 # The CMS content is the source of truth; never cache the generated catalog.
 [[headers]]

@@ -786,10 +786,11 @@
       // history
       case 'open': { const r = S.reports.find((x) => x.id === id); draft = structuredClone(r); dirty = false; tab = 'raporti'; return render(); }
       case 'open-st': return go('station', id);
+      case 'install': if (installEvt) { installEvt.prompt(); installEvt = null; } return;
       case 'l-csv': return download(`litrat-${renderLiters.o.mode === 'dite' ? renderLiters.o.date : renderLiters.o.month}.csv`, csv(renderLiters.csv), 'text/csv');
-      case 'g-add': case 'g-ren': case 'g-del': case 'st-add': case 'st-del':
       case 'w-add': case 'w-open': case 'w-del': case 'w-report':
         return workerAction(act, b);
+      case 'g-add': case 'g-ren': case 'g-del': case 'st-add': case 'st-del':
       case 'c-add': case 'c-open': case 'c-pay': case 'c-pay-del': case 'c-del': case 'c-csv': case 'c-report':
         return homeAction(act, b);
       case 'h-del': if (await ask('Ta fshij këtë raport?')) { S.reports = S.reports.filter((r) => r.id !== id); save(); renderHistory(); } return;
@@ -1137,7 +1138,29 @@ Përgjigju VETËM me një objekt JSON në këtë formë:
           <label class="btn">⬆ Ngarko kopjen<input type="file" id="restore" accept=".json,application/json" hidden></label>
           <button class="btn danger" data-act="reset">Fshi të gjitha të dhënat</button>
         </div>
-      </div>`;
+      </div>
+      ${installCard()}`;
+  }
+
+  // ---------- running as a program on the laptop ----------
+  // Chrome/Edge offer to install the site as an app; the offline file needs no internet at all.
+  let installEvt = null;
+  const onWebsite = !inViewer && /^https?:$/.test(location.protocol);
+  const installed = () => window.matchMedia?.('(display-mode: standalone)').matches;
+  function installCard() {
+    if (DEMO || !onWebsite || installed()) return '';
+    return `<div class="card install"><h2>💻 Programi në laptop</h2>
+      <div class="row">
+        ${installEvt ? '<button class="btn primary" data-act="install">Instalo si program</button>' : ''}
+        <a class="btn" href="karburanti-offline.html" download="Karburanti.html">⬇ Shkarko skedarin pa internet</a>
+      </div>
+      <p class="note">${installEvt ? '"Instalo si program" e vendos në Desktop dhe në Start, dhe hapet në dritaren e vet edhe pa internet. ' : 'Për ta instaluar si program, hapeni këtë faqe me Chrome ose Edge dhe shtypni ikonën e instalimit në shiritin e adresës. '}
+        Skedari pa internet hapet me dy klikime nga çdo kompjuter. Secila mënyrë i ruan të dhënat veç: për t'i kaluar, përdorni kopjen rezervë.</p></div>`;
+  }
+  if (onWebsite) {
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; if (tab === 'pikat') renderHome(); });
+    window.addEventListener('appinstalled', () => { installEvt = null; toast('Programi u instalua'); if (tab === 'pikat') renderHome(); });
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
   // New stations copy products, pumps and shifts from a chosen station, without its reports.
